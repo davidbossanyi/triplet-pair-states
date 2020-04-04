@@ -47,14 +47,14 @@ class SpinHamiltonian:
     
     Then the quantities of interest can be calculated:
     
-    >>> sh.calculate_TTl_states()
+    >>> sh.calculate_eigenstates()
     >>> sh.calculate_cslsq()
     
     And accessed as attributes:
         
     >>> cslsq = sh.cslsq
-    >>> eigenvalues = sh.TTl_eigenvalues
-    >>> eigenstates = sh.TTl_eigenstates
+    >>> eigenvalues = sh.eigenvalues
+    >>> eigenstates = sh.eigenstates
     
     DETAILS
     ---------------------------------------------------------------------------
@@ -240,4 +240,20 @@ class SpinHamiltonian:
         """
         self.csl = np.matmul(self._singlet_state, self.eigenstates)
         self.cslsq = np.abs(self.csl)**2
+        return
+    
+    def calculate_everything(self):
+        """
+        If no averaging is required, this saves typing out all the separate
+        calculation steps
+        """
+        self.calculate_exchange_hamiltonian()
+        self.calculate_zerofield_hamiltonian_single_molecule()
+        self.calculate_zerofield_hamiltonian_molecule_A()
+        self.calculate_zerofield_hamiltonian_molecule_B()
+        self.calculate_dipoledipole_hamiltonian()
+        self.calculate_zeeman_hamiltonian()
+        self.calculate_hamiltonian()
+        self.calculate_eigenstates()
+        self.calculate_cslsq()
         return

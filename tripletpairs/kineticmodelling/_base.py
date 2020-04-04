@@ -1,9 +1,6 @@
-import os
 import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import fsolve
-import matplotlib.pyplot as plt 
-import matplotlib.image as mpimg
 
 
 class KineticModelBase:
@@ -16,10 +13,6 @@ class KineticModelBase:
         self.rates = ['kGEN']
         self.model_name = 'base'
         self._allowed_initial_states = {'S1, T1'}
-        self._set_default_parameters()
-        self._set_default_rates()
-        
-    def _set_default_parameters(self):
         self.t = np.logspace(-5, 5, 10000)
         self.initial_state = 'S1'
         self.G = 1e17
@@ -29,20 +22,14 @@ class KineticModelBase:
     def _rate_equations(self, y, t):
         return np.ones(self.number_of_states+1)
     
-    def display_schematic(self):
-        image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'schematics', '{0}.png'.format(self.model_name))
-        img = mpimg.imread(image_path)
-        plt.imshow(img)
-        plt.show()
-        return
-    
     def _set_generation_rates(self, time_resolved=True):
         if time_resolved:
-            self._G = 0
-            if self.initial_species == 'S1':
+            self._GS = 0
+            self._GT = 0
+            if self.initial_state == 'S1':
                 self._kGENS = self.kGEN
                 self._kGENT = 0
-            elif self.initial_species == 'T1':
+            elif self.initial_state == 'T1':
                 self._kGENS = 0
                 self._kGENT = self.kGEN
             else:
@@ -50,16 +37,18 @@ class KineticModelBase:
         else:
             self._kGENS = 0
             self._kGENT = 0
-            if self.initial_species == 'S1':
+            if self.initial_state == 'S1':
                 self._GS = self.G
-            elif self.initial_species == 'T1':
+                self._GT = 0
+            elif self.initial_state == 'T1':
+                self._GS = 0
                 self._GT = self.G
             else:
                 raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
         return
             
     def _set_initial_condition(self, time_resolved=True):
-        if self.time_resolved:
+        if time_resolved:
             y0 = np.zeros(self.number_of_states+1)
             y0[0] = self.G
         else:
@@ -80,7 +69,7 @@ class KineticModelBase:
     
     def simulate_time_resolved(self):
         self._initialise_simulation_tr()
-        y = odeint(lambda y, t: self._rate_equations(t, y), self.y0, self.t)
+        y = odeint(lambda y, t: self._rate_equations(y, t), self.y0, self.t)
         self._unpack_simulation_tr(y)
         return
         

@@ -8,7 +8,7 @@ class MerrifieldExplicit1TT(KineticModelBase):
     the 1(TT) from S1 and (T..T).
     """
     def __init__(self):
-        super(KineticModelBase, self).__init__()
+        super().__init__()
         # metadata
         self.model_name = 'MerrifieldExplicit1TT'
         self.number_of_states = 12
@@ -93,6 +93,7 @@ class MerrifieldExplicit1TT(KineticModelBase):
         self.TT = y[:, 2]
         self.T_T_total = np.sum(y[:, 3:12], axis=1)
         self.T1 = y[:, -1]
+        self._wrap_simulation_results()
         return
     
     def _initialise_simulation_ss(self):
@@ -106,15 +107,20 @@ class MerrifieldExplicit1TT(KineticModelBase):
         self.TT = y[2]
         self.T_T_total = np.sum(y[3:12])
         self.T1 = y[-1]
+        self._wrap_simulation_results()
         return
-        
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.T_T_total, self.T1]))
+        return
+      
 
 class Merrifield(KineticModelBase):
     """
     The standard Merrifield model.
     """
     def __init__(self):
-        super(KineticModelBase, self).__init__()
+        super().__init__()
         # metadata
         self.model_name = 'Merrifield'
         self.number_of_states = 11
@@ -139,9 +145,9 @@ class Merrifield(KineticModelBase):
         GS, S1, TT_1, TT_2, TT_3, TT_4, TT_5, TT_6, TT_7, TT_8, TT_9, T1 = y
         dydt = np.zeros(self.number_of_states+1)
         # GS
-        dydt[0] = -(self.kGENS+self.kGENT)*GS
+        dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
-        dydt[1] = self._GS + self.kGENS*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1+ self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
+        dydt[1] = self._GS + self._kGENS*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1+ self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
         # TT_1
         dydt[2] = self.kSF*self.cslsq[0]*S1 - (self.k_SF*self.cslsq[0]+self.kDISS+self.kTTNR+self.kRELAX)*TT_1 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9)
         # TT_2
@@ -161,7 +167,7 @@ class Merrifield(KineticModelBase):
         # TT_9
         dydt[10] = self.kSF*self.cslsq[8]*S1 - (self.k_SF*self.cslsq[8]+self.kDISS+self.kTTNR+self.kRELAX)*TT_9 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8)
         # T1
-        dydt[11] = self._GT + self.kGENT*GS + 2.0*self.kDISS*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9) - 2.0*self.kTTA*T1*T1 - self.kTNR*T1
+        dydt[11] = self._GT + self._kGENT*GS + 2.0*self.kDISS*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9) - 2.0*self.kTTA*T1*T1 - self.kTNR*T1
         #
         return dydt
 
@@ -171,14 +177,20 @@ class Merrifield(KineticModelBase):
         self.TT_total = np.sum(y[:, 2:11], axis=1)
         self.T_T_total = np.sum(y[:, 11:-1], axis=1)
         self.T1 = y[:, -1]
+        self._wrap_simulation_results()
         return
         
     def _unpack_simulation_ss(self, y):
         self.S1 = y[1]
         self.TT_bright = self.cslsq[0]*y[2] + self.cslsq[1]*y[3] + self.cslsq[2]*y[4] + self.cslsq[3]*y[5] + self.cslsq[4]*y[6] + self.cslsq[5]*y[7] + self.cslsq[6]*y[8] + self.cslsq[7]*y[9] + self.cslsq[8]*y[10]
-        self.TT_total = np.sum(y[2:11], axis=1)
-        self.T_T_total = np.sum(y[11:-1], axis=1)
+        self.TT_total = np.sum(y[2:11])
+        self.T_T_total = np.sum(y[11:-1])
         self.T1 = y[-1]
+        self._wrap_simulation_results()
+        return
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total, self.T1]))
         return
         
 
@@ -189,7 +201,7 @@ class Bardeen(KineticModelBase):
     fashion.
     """
     def __init__(self):
-        super(KineticModelBase, self).__init__()
+        super().__init__()
         # metadata
         self.model_name = 'Bardeen'
         self.number_of_states = 19
@@ -215,9 +227,9 @@ class Bardeen(KineticModelBase):
         GS, S1, TT_1, TT_2, TT_3, TT_4, TT_5, TT_6, TT_7, TT_8, TT_9, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9 = y
         dydt = np.zeros(self.number_of_states+1)
         # GS
-        dydt[0] = -self.kGEN*GS
+        dydt[0] = -self._kGEN*GS
         # S1
-        dydt[1] = self._GS + self.kGEN*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1 + self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
+        dydt[1] = self._GS + self._kGEN*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1 + self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
         # TT_1
         dydt[2] = self.kSF*self.cslsq[0]*S1 - (self.k_SF+self.kTTNR)*self.cslsq[0]*TT_1 - self.kHOP*TT_1 + self.k_HOP*T_T_1
         # TT_2
@@ -263,12 +275,18 @@ class Bardeen(KineticModelBase):
         self.TT_bright = self.cslsq[0]*y[:, 2] + self.cslsq[1]*y[:, 3] + self.cslsq[2]*y[:, 4] + self.cslsq[3]*y[:, 5] + self.cslsq[4]*y[:, 6] + self.cslsq[5]*y[:, 7] + self.cslsq[6]*y[:, 8] + self.cslsq[7]*y[:, 9] + self.cslsq[8]*y[:, 10]
         self.TT_total = np.sum(y[:, 2:11], axis=1)
         self.T_T_total = np.sum(y[:, 11:], axis=1)
+        self._wrap_simulation_results()
         return
     
     def _unpack_simulation_ss(self, y):
         self.GS = y[0]
         self.S1 = y[1]
         self.TT_bright = self.cslsq[0]*y[2] + self.cslsq[1]*y[3] + self.cslsq[2]*y[4] + self.cslsq[3]*y[5] + self.cslsq[4]*y[6] + self.cslsq[5]*y[7] + self.cslsq[6]*y[8] + self.cslsq[7]*y[9] + self.cslsq[8]*y[10]
-        self.TT_total = np.sum(y[2:11], axis=1)
-        self.T_T_total = np.sum(y[11:], axis=1)
+        self.TT_total = np.sum(y[2:11])
+        self.T_T_total = np.sum(y[11:])
+        self._wrap_simulation_results()
+        return
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total]))
         return
