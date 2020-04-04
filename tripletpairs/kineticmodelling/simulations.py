@@ -1,8 +1,8 @@
-from triplet_pairs.spin import spinhamiltonian as sh
+from tripletpairs.spin import SpinHamiltonian
 
 class KineticSimulation:
     
     def __init__(self, kinetic_model):
         self.kinetic_model = kinetic_model
-        self.spin_hamiltonian = sh.SpinHamiltonian()
+        self.spin_hamiltonian = SpinHamiltonian()
         

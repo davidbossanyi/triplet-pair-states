@@ -1,4 +1,4 @@
-from _base import KineticModelBase
+from ._base import KineticModelBase
 import numpy as np
 
 
