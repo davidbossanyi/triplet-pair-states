@@ -13,12 +13,12 @@ class KineticSimulation:
         self.spin_hamiltonian.rAB = rAB
         self.spin_hamiltonian.D = D
         self.spin_hamiltonian.E = E
-        self.alpha_range = np.atleast_ld(alpha)
-        self.beta_range = np.atleast_ld(beta)
-        self.gamma_range = np.atleast_ld(gamma)
-        self.B_range = np.atleast_ld(B)
-        self.theta_range = np.atleast_ld(theta)
-        self.phi_range = np.atleast_ld(phi)
+        self.alpha_range = np.atleast_1d(alpha)
+        self.beta_range = np.atleast_1d(beta)
+        self.gamma_range = np.atleast_1d(gamma)
+        self.B_range = np.atleast_1d(B)
+        self.theta_range = np.atleast_1d(theta)
+        self.phi_range = np.atleast_1d(phi)
         return
     
     def simulate_state_populations(self, states, time_resolved, return_eigenvalues=False):
@@ -29,15 +29,16 @@ class KineticSimulation:
             self.eigenvalues = None
         
         if time_resolved:
-            self.state_populations = dict(zip(states, [np.zeros(len(self.model.t), len(self.B_range)) for element in range(len(states))]))
+            self.times = self.kinetic_model.t
+            self.state_populations = dict(zip(states, [np.zeros((len(self.kinetic_model.t), len(self.B_range))) for element in range(len(states))]))
         else:
-            self.state_populations = dict(zip(states, [np.zeros(1, len(self.B_range)) for element in range(len(states))]))
+            self.state_populations = dict(zip(states, [np.zeros((1, len(self.B_range))) for element in range(len(states))]))
 
         for i, B in enumerate(self.B_range):    
             state_populations_i, eigenvalues_i = self._simulate_average(B, states, time_resolved, return_eigenvalues)
             
             for state in states:
-                self.state_populations[state][:, i] = state_populations_i
+                self.state_populations[state][:, i] = state_populations_i[state]
                 
             if return_eigenvalues:
                 self.eigenvalues[:, i] = eigenvalues_i
@@ -46,16 +47,18 @@ class KineticSimulation:
     
     def calculate_mfe(self, state='S1', time_range=None):
         
-        if self.state_populations[state].size[0] > 1 and time_range is not None:
+        if self.state_populations[state].shape[0] == 1 and time_range is not None:
             raise ValueError('time_range can only be specified for time-resolved simulations')
+        elif self.state_populations[state].shape[0] > 1 and time_range is None:
+            raise ValueError('time_range must be specified for time-resolved simulations')
         
         if time_range is None:
             state_population = self.state_populations[state]
         else:
             t1, t2 = time_range
-            mask = ((self.model.t >= t1) & (self.model.t <= t2))
-            state_population = self.state_population[state][mask, :]
-            state_population = np.trapz(state_population, x=self.model.t[mask], axis=1)/(t2-t1)
+            mask = ((self.kinetic_model.t >= t1) & (self.kinetic_model.t <= t2))
+            state_population = self.state_populations[state][mask, :]
+            state_population = np.trapz(state_population, x=self.kinetic_model.t[mask], axis=0)/(t2-t1)
         
         state_population = np.squeeze(state_population)
         
@@ -71,9 +74,9 @@ class KineticSimulation:
             eigenvalues = None
             
         if time_resolved:
-            state_populations = dict(zip(states, [np.zeros_like(self.model.t) for element in range(len(states))]))
+            state_populations = dict(zip(states, [np.zeros_like(self.kinetic_model.t) for element in range(len(states))]))
         else:
-            state_populations = dict(zip(states), np.zeros(len(states)))
+            state_populations = dict(zip(states, np.zeros(len(states))))
         
         self.spin_hamiltonian.calculate_exchange_hamiltonian()
         self.spin_hamiltonian.calculate_zerofield_hamiltonian_single_molecule()
@@ -100,18 +103,18 @@ class KineticSimulation:
                                 self.spin_hamiltonian.calculate_hamiltonian()
                                 self.spin_hamiltonian.calculate_eigenstates()
                                 self.spin_hamiltonian.calculate_cslsq()
-                                self.model.cslsq = self.spin_hamiltonian.cslsq
+                                self.kinetic_model.cslsq = self.spin_hamiltonian.cslsq
                                 
                                 if time_resolved:
-                                    self.model.simulate_time_resolved()
+                                    self.kinetic_model.simulate_time_resolved()
                                 else:
-                                    self.model.simulate_steady_state()
+                                    self.kinetic_model.simulate_steady_state()
                                    
                                 if return_eigenvalues:
                                     eigenvalues = (eigenvalues*(counter-1)+self.spin_hamiltonian.eigenvalues)/counter
                                     
                                 for state in states:
-                                    state_populations[state] = (state_populations[state]*(counter-1)+self.model.simulation_results[state])/counter
+                                    state_populations[state] = (state_populations[state]*(counter-1)+self.kinetic_model.simulation_results[state])/counter
                                     
                                 counter += 1
         return state_populations, eigenvalues
