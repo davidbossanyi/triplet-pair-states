@@ -1,8 +1,8 @@
-from ._base import KineticModelBase
+from ._base import TimeResolvedModel
 import numpy as np
 
 
-class MerrifieldExplicit1TT(KineticModelBase):
+class MerrifieldExplicit1TT(TimeResolvedModel):
     """
     This is basically Merrifields model, but explicitly separating 
     the 1(TT) from S1 and (T..T).
@@ -39,7 +39,7 @@ class MerrifieldExplicit1TT(KineticModelBase):
         # GS
         dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
-        dydt[1] = self._GS + self._kGENS*GS - (self.kSNR+self.kSF)*S1 - self.kSSA*S1*S1 + self.k_SF*TT + self._kTTA_3*T1**2
+        dydt[1] = self._kGENS*GS - (self.kSNR+self.kSF)*S1 - self.kSSA*S1*S1 + self.k_SF*TT + self._kTTA_3*T1**2
         # TT
         dydt[2] = self.kSF*S1 - (self.k_SF+self.kTTNR+self.kHOP*np.sum(self.cslsq))*TT + self.k_HOP*(self.cslsq[0]*T_T_1+self.cslsq[1]*T_T_2+self.cslsq[2]*T_T_3+self.cslsq[3]*T_T_4+self.cslsq[4]*T_T_5+self.cslsq[5]*T_T_6+self.cslsq[6]*T_T_7+self.cslsq[7]*T_T_8+self.cslsq[8]*T_T_9) + self._kTTA_2*T1**2
         # T_T_1
@@ -61,7 +61,7 @@ class MerrifieldExplicit1TT(KineticModelBase):
         # T_T_9
         dydt[11] = self.kHOP*self.cslsq[8]*TT - (self.k_HOP*self.cslsq[8]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_9 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8)
         # T1
-        dydt[12] = self._GT + self._kGENT*GS + (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 - self.kTNR*T1
+        dydt[12] = self._kGENT*GS + (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 - self.kTNR*T1
         #
         return dydt
     
@@ -82,31 +82,17 @@ class MerrifieldExplicit1TT(KineticModelBase):
             raise ValueError('TTA channel must be either 1, 2 or 3')
         return
             
-    def _initialise_simulation_tr(self):
+    def _initialise_simulation(self):
         self._set_tta_rates()
-        self._set_initial_condition(time_resolved=True)
-        self._set_generation_rates(time_resolved=True)
+        self._set_initial_condition()
+        self._set_generation_rates()
         return
 
-    def _unpack_simulation_tr(self, y):
+    def _unpack_simulation(self, y):
         self.S1 = y[:, 1]
         self.TT = y[:, 2]
         self.T_T_total = np.sum(y[:, 3:12], axis=1)
         self.T1 = y[:, -1]
-        self._wrap_simulation_results()
-        return
-    
-    def _initialise_simulation_ss(self):
-        self._set_tta_rates()
-        self._set_initial_condition(time_resolved=False)
-        self._set_generation_rates(time_resolved=False)
-        return
-
-    def _unpack_simulation_ss(self, y):
-        self.S1 = y[1]
-        self.TT = y[2]
-        self.T_T_total = np.sum(y[3:12])
-        self.T1 = y[-1]
         self._wrap_simulation_results()
         return
     
@@ -115,7 +101,7 @@ class MerrifieldExplicit1TT(KineticModelBase):
         return
       
 
-class Merrifield(KineticModelBase):
+class Merrifield(TimeResolvedModel):
     """
     The standard Merrifield model.
     """
@@ -124,7 +110,7 @@ class Merrifield(KineticModelBase):
         # metadata
         self.model_name = 'Merrifield'
         self.number_of_states = 11
-        self.states = ['S1', 'TT_bright', 'TT_total', 'T_T_total', 'T1']
+        self.states = ['S1', 'TT_bright', 'TT_total', 'T1']
         self.rates = ['kGEN', 'kSF', 'k_SF', 'kDISS', 'KTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
         # rates between excited states
         self.kSF = 20.0
@@ -147,7 +133,7 @@ class Merrifield(KineticModelBase):
         # GS
         dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
-        dydt[1] = self._GS + self._kGENS*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1+ self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
+        dydt[1] = self._kGENS*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1+ self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
         # TT_1
         dydt[2] = self.kSF*self.cslsq[0]*S1 - (self.k_SF*self.cslsq[0]+self.kDISS+self.kTTNR+self.kRELAX)*TT_1 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9)
         # TT_2
@@ -167,34 +153,24 @@ class Merrifield(KineticModelBase):
         # TT_9
         dydt[10] = self.kSF*self.cslsq[8]*S1 - (self.k_SF*self.cslsq[8]+self.kDISS+self.kTTNR+self.kRELAX)*TT_9 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8)
         # T1
-        dydt[11] = self._GT + self._kGENT*GS + 2.0*self.kDISS*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9) - 2.0*self.kTTA*T1*T1 - self.kTNR*T1
+        dydt[11] = self._kGENT*GS + 2.0*self.kDISS*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9) - 2.0*self.kTTA*T1*T1 - self.kTNR*T1
         #
         return dydt
 
-    def _unpack_simulation_tr(self, y):
+    def _unpack_simulation(self, y):
         self.S1 = y[:, 1]
         self.TT_bright = self.cslsq[0]*y[:, 2] + self.cslsq[1]*y[:, 3] + self.cslsq[2]*y[:, 4] + self.cslsq[3]*y[:, 5] + self.cslsq[4]*y[:, 6] + self.cslsq[5]*y[:, 7] + self.cslsq[6]*y[:, 8] + self.cslsq[7]*y[:, 9] + self.cslsq[8]*y[:, 10]
         self.TT_total = np.sum(y[:, 2:11], axis=1)
-        self.T_T_total = np.sum(y[:, 11:-1], axis=1)
         self.T1 = y[:, -1]
-        self._wrap_simulation_results()
-        return
-        
-    def _unpack_simulation_ss(self, y):
-        self.S1 = y[1]
-        self.TT_bright = self.cslsq[0]*y[2] + self.cslsq[1]*y[3] + self.cslsq[2]*y[4] + self.cslsq[3]*y[5] + self.cslsq[4]*y[6] + self.cslsq[5]*y[7] + self.cslsq[6]*y[8] + self.cslsq[7]*y[9] + self.cslsq[8]*y[10]
-        self.TT_total = np.sum(y[2:11])
-        self.T_T_total = np.sum(y[11:-1])
-        self.T1 = y[-1]
         self._wrap_simulation_results()
         return
     
     def _wrap_simulation_results(self):
-        self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total, self.T1]))
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T1]))
         return
         
 
-class Bardeen(KineticModelBase):
+class Bardeen(TimeResolvedModel):
     """
     Variation of Merrifield model presented by Bardeen and co-workers. It is
     valid at low fluence (no TTA) and adds triplet diffusion in a crude
@@ -229,7 +205,7 @@ class Bardeen(KineticModelBase):
         # GS
         dydt[0] = -self._kGEN*GS
         # S1
-        dydt[1] = self._GS + self._kGEN*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1 + self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
+        dydt[1] = self._kGEN*GS - (self.kSNR+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1 + self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
         # TT_1
         dydt[2] = self.kSF*self.cslsq[0]*S1 - (self.k_SF+self.kTTNR)*self.cslsq[0]*TT_1 - self.kHOP*TT_1 + self.k_HOP*T_T_1
         # TT_2
@@ -269,21 +245,12 @@ class Bardeen(KineticModelBase):
         #
         return dydt
 
-    def _unpack_simulation_tr(self, y):
+    def _unpack_simulation(self, y):
         self.GS = y[:, 0]
         self.S1 = y[:, 1]
         self.TT_bright = self.cslsq[0]*y[:, 2] + self.cslsq[1]*y[:, 3] + self.cslsq[2]*y[:, 4] + self.cslsq[3]*y[:, 5] + self.cslsq[4]*y[:, 6] + self.cslsq[5]*y[:, 7] + self.cslsq[6]*y[:, 8] + self.cslsq[7]*y[:, 9] + self.cslsq[8]*y[:, 10]
         self.TT_total = np.sum(y[:, 2:11], axis=1)
         self.T_T_total = np.sum(y[:, 11:], axis=1)
-        self._wrap_simulation_results()
-        return
-    
-    def _unpack_simulation_ss(self, y):
-        self.GS = y[0]
-        self.S1 = y[1]
-        self.TT_bright = self.cslsq[0]*y[2] + self.cslsq[1]*y[3] + self.cslsq[2]*y[4] + self.cslsq[3]*y[5] + self.cslsq[4]*y[6] + self.cslsq[5]*y[7] + self.cslsq[6]*y[8] + self.cslsq[7]*y[9] + self.cslsq[8]*y[10]
-        self.TT_total = np.sum(y[2:11])
-        self.T_T_total = np.sum(y[11:])
         self._wrap_simulation_results()
         return
     

@@ -1,18 +1,18 @@
 import numpy as np
 from scipy.integrate import odeint
-from scipy.optimize import fsolve
 
 
-class KineticModelBase:
+class TimeResolvedModel:
     """
-    Base class for all kinetic models.
+    Base class for all time-resolved models.
     """
     def __init__(self):
         self.number_of_states = 2
         self.states = ['S1', 'T1']
         self.rates = ['kGEN']
         self.model_name = 'base'
-        self._allowed_initial_states = {'S1, T1'}
+        self.time_resolved = True
+        self._allowed_initial_states = {'S1', 'T1'}
         self.t = np.logspace(-5, 5, 10000)
         self.initial_state = 'S1'
         self.G = 1e17
@@ -22,67 +22,36 @@ class KineticModelBase:
     def _rate_equations(self, y, t):
         return np.ones(self.number_of_states+1)
     
-    def _set_generation_rates(self, time_resolved=True):
-        if time_resolved:
-            self._GS = 0
-            self._GT = 0
-            if self.initial_state == 'S1':
-                self._kGENS = self.kGEN
-                self._kGENT = 0
-            elif self.initial_state == 'T1':
-                self._kGENS = 0
-                self._kGENT = self.kGEN
-            else:
-                raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
-        else:
-            self._kGENS = 0
+    def _set_generation_rates(self):
+        if self.initial_state not in self._allowed_initial_states:
+            raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
+        if self.initial_state == 'S1':
+            self._kGENS = self.kGEN
             self._kGENT = 0
-            if self.initial_state == 'S1':
-                self._GS = self.G
-                self._GT = 0
-            elif self.initial_state == 'T1':
-                self._GS = 0
-                self._GT = self.G
-            else:
-                raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
+        elif self.initial_state == 'T1':
+            self._kGENS = 0
+            self._kGENT = self.kGEN
+        else:
+            raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
         return
             
-    def _set_initial_condition(self, time_resolved=True):
-        if time_resolved:
-            y0 = np.zeros(self.number_of_states+1)
-            y0[0] = self.G
-        else:
-            y0 = self.G*np.ones(self.number_of_states+1)
-            y0[0] = 0
-        self.y0 = y0
+    def _set_initial_condition(self):
+        self.y0 = np.zeros(self.number_of_states+1)
+        self.y0[0] = self.G
         return
         
-    def _initialise_simulation_tr(self):
-        self._set_initial_condition(time_resolved=True)
-        self._set_generation_rates(time_resolved=True)
+    def _initialise_simulation(self):
+        self._set_initial_condition()
+        self._set_generation_rates()
         return
     
-    def _initialise_simulation_ss(self):
-        self._set_initial_condition(time_resolved=False)
-        self._set_generation_rates(time_resolved=False)
-        return
-    
-    def simulate_time_resolved(self):
-        self._initialise_simulation_tr()
+    def simulate(self):
+        self._initialise_simulation()
         y = odeint(lambda y, t: self._rate_equations(y, t), self.y0, self.t)
-        self._unpack_simulation_tr(y)
+        self._unpack_simulation(y)
         return
         
-    def _unpack_simulation_tr(self, y):
-        pass
-    
-    def simulate_steady_state(self):
-        self._initialise_simulation_ss()
-        y = fsolve(lambda y: self._rate_equations(y, 0), self.y0)
-        self._unpack_simulation_ss(y)
-        return
-        
-    def _unpack_simulation_ss(self, y):
+    def _unpack_simulation(self, y):
         pass
     
     def get_population_between(self, array, t1, t2):
@@ -103,3 +72,52 @@ class KineticModelBase:
         factor = array[idx]
         array = array/factor
         return array, factor
+
+    
+class SteadyStateModel:
+    """
+    Base class for all steady-state models.
+    """
+    def __init__(self):
+        self.number_of_states = 2
+        self.states = ['S1', 'T1']
+        self.rates = []
+        self.model_name = 'base'
+        self.time_resolved = False
+        self._allowed_initial_states = {'S1', 'T1', 'injection'}
+        self.initial_state = 'S1'
+        self.G = 2.7e13
+        return
+    
+    def _set_generation_rates(self):
+        if self.initial_state not in self._allowed_initial_states:
+            raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
+        if self.initial_state == 'S1':
+            self._GS = self.G
+            self._GT = 0
+        elif self.initial_state == 'T1':
+            self._GS = 0
+            self._GT = self.G
+        elif self.initial_state == 'injection':
+            self._GS = self.G/4
+            self._GT = 3*self.G/4
+        else:
+            raise ValueError('initial_state attribute must be one of {0}'.format(self._allowed_initial_states))
+        return
+    
+    def simulate(self):
+        pass
+    
+    @staticmethod
+    def _quadratic_formula(a, b, c):
+        det = np.sqrt(b*b - 4*a*c)
+        return (-1*b-det)/(2*a), (-1*b+det)/(2*a)
+    
+    @staticmethod
+    def _check_root(root):
+        if not np.isreal(root):
+            raise RuntimeError('no valid solution found')
+        else:
+            if root < 0:
+                raise RuntimeError('no valid solution found')
+            
