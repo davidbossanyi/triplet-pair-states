@@ -21,21 +21,21 @@ class KineticSimulation:
         self.phi_range = np.atleast_1d(phi)
         return
     
-    def simulate_state_populations(self, states, time_resolved, return_eigenvalues=False):
+    def simulate_state_populations(self, states, return_eigenvalues=False):
         
         if return_eigenvalues:
             self.eigenvalues = np.zeros(9, len(self.B_range))
         else:
             self.eigenvalues = None
         
-        if time_resolved:
+        if self.kinetic_model.time_resolved:
             self.times = self.kinetic_model.t
             self.state_populations = dict(zip(states, [np.zeros((len(self.kinetic_model.t), len(self.B_range))) for element in range(len(states))]))
         else:
             self.state_populations = dict(zip(states, [np.zeros((1, len(self.B_range))) for element in range(len(states))]))
 
         for i, B in enumerate(self.B_range):    
-            state_populations_i, eigenvalues_i = self._simulate_average(B, states, time_resolved, return_eigenvalues)
+            state_populations_i, eigenvalues_i = self._simulate_average(B, states, self.kinetic_model.time_resolved, return_eigenvalues)
             
             for state in states:
                 self.state_populations[state][:, i] = state_populations_i[state]
@@ -105,10 +105,7 @@ class KineticSimulation:
                                 self.spin_hamiltonian.calculate_cslsq()
                                 self.kinetic_model.cslsq = self.spin_hamiltonian.cslsq
                                 
-                                if time_resolved:
-                                    self.kinetic_model.simulate_time_resolved()
-                                else:
-                                    self.kinetic_model.simulate_steady_state()
+                                self.kinetic_model.simulate()
                                    
                                 if return_eigenvalues:
                                     eigenvalues = (eigenvalues*(counter-1)+self.spin_hamiltonian.eigenvalues)/counter

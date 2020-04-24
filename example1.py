@@ -1,4 +1,4 @@
-from tripletpairs.kineticmodelling import models
+from tripletpairs.kineticmodelling import timeresolvedmodels
 from tripletpairs.kineticmodelling import KineticSimulation
 
 import numpy as np
@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 # SET UP THE KINETIC MODEL
 ###############################################################################
 
-m = models.Merrifield()
+m = timeresolvedmodels.Merrifield()
 m.kGEN = 1.8
 m.kSF = 0.05
 m.k_SF = 0.05
@@ -46,7 +46,7 @@ B = np.linspace(0, 0.25, 10)
 
 sim = KineticSimulation(m)
 sim.set_spin_hamiltonian_parameters(J, X, rAB, D, E, alpha, beta, gamma, B, theta, phi)
-sim.simulate_state_populations(['S1', 'TT_total', 'T1'], time_resolved=True)
+sim.simulate_state_populations(['S1', 'TT_total', 'T1'])
 mfe1 = sim.calculate_mfe('S1', time_range=(20, 30))
 mfe2 = sim.calculate_mfe('S1', time_range=(100, 200))
 

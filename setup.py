@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='tripletpairs',
 
-    version='0.0.1',
+    version='0.1.1',
 
     description='Package for simulations of triplet-pair states.',
 
@@ -41,6 +41,6 @@ setup(
 
     python_requires='>=3.7',
 
-    install_requires=['numpy>=1.18.1','scipy>=1.4.1'],
+    install_requires=['numpy>=1.18.1','scipy>=1.4.1','matplotlib>=3.1.2'],
 
 )
