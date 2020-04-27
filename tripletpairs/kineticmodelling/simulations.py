@@ -97,7 +97,8 @@ class KineticSimulation:
                             self.spin_hamiltonian.theta, self.spin_hamiltonian.phi = theta, phi
                             
                             for J in self.J_range:
-                                    
+                                
+                                self.spin_hamiltonian.J = J
                                 self.spin_hamiltonian.B = B
                                 self.spin_hamiltonian.calculate_zeeman_hamiltonian()
                                 self.spin_hamiltonian.calculate_hamiltonian()
