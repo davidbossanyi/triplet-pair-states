@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='tripletpairs',
 
-    version='0.1.2',
+    version='0.1.3',
 
     description='Package for simulations of triplet-pair states.',
 
@@ -37,7 +37,7 @@ setup(
 
     keywords='optical spectroscopy',
 
-    packages=find_packages(exclude=['docs']),
+    packages=find_packages(exclude=['doc', 'examples']),
 
     python_requires='>=3.7',
 

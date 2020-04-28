@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tripletpairs.spin.spinhamiltonian &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tripletpairs.spin.spinhamiltonian</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="SpinHamiltonian"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian">[docs]</a><span class="k">class</span> <span class="nc">SpinHamiltonian</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for calculating and using the spin Hamiltonian for (T..T) states.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu_B : float</span>
+<span class="sd">        Value of the Bohr magneton in eV. Default is 5.788e-5.</span>
+<span class="sd">    g : float</span>
+<span class="sd">        Value of the electron g-factor. Default is 2.002.</span>
+<span class="sd">    J : float</span>
+<span class="sd">        Value of the intertriplet exchange energy in eV.</span>
+<span class="sd">    D, E: float</span>
+<span class="sd">        Values of the intratriplet zero-field splitting parameters in eV.</span>
+<span class="sd">    X : float</span>
+<span class="sd">        Value of the intertriplet dipole-dipole coupling strength in eV.</span>
+<span class="sd">    rAB : 3-tuple of float</span>
+<span class="sd">        Centre-of-mass vector (x, y, z) between the two molecules comprising the triplet-pair. Must be given in the molecular coordinate system of molecule A.</span>
+<span class="sd">    alpha, beta, gamma : float</span>
+<span class="sd">        Euler angles :math:`\alpha, \beta, \gamma` that would rotate molecule A onto molecule B using the ZX&#39;Z&#39;&#39; convention, in radians. Must be calculated in the molecular coordinate system of molecule A.</span>
+<span class="sd">    theta, phi : float</span>
+<span class="sd">        Spherical polar angles :math:`\theta, \phi` defining the orientation of the magnetic field in the molecular coordinate system of molecule A.</span>
+<span class="sd">    B : float</span>
+<span class="sd">        Value of the external magnetic field strength in Tesla.</span>
+<span class="sd">    H : numpy.ndarray</span>
+<span class="sd">        The computed Hamiltonian matrix (9x9).</span>
+<span class="sd">    eigenvalues : numpy.ndarray</span>
+<span class="sd">        1D array containing the computed eigenvalues (the energies of the 9 (T..T) states).</span>
+<span class="sd">    eigenvectors : numpy.ndarray</span>
+<span class="sd">        The computed eigenvectors (columns).</span>
+<span class="sd">    csl : numpy.ndarray</span>
+<span class="sd">        1D array containing the overlap factors between the 9 eigenstates and the singlet. Complex numbers in general.</span>
+<span class="sd">    cslsq : numpy.ndarray</span>
+<span class="sd">        1D array containing the squared overlap factors between the 9 eigenstates and the singlet. These are what is used in kinetic models.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_constants</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialise_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_singlet_state</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">_set_constants</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_B</span> <span class="o">=</span> <span class="mf">5.788e-5</span>  <span class="c1"># Bohr magneton in eV/T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="mf">2.002</span>        <span class="c1"># electron gyromagnetic ratio</span>
+        <span class="k">return</span>
+        
+    <span class="k">def</span> <span class="nf">_initialise_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mf">1e-6</span>         <span class="c1"># D parameter in eV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="mf">3e-6</span>         <span class="c1"># E parameter in eV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="mf">6e-8</span>         <span class="c1"># intertriplet dipole-dipole interaction in eV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">J</span> <span class="o">=</span> <span class="mi">0</span>            <span class="c1"># intertriplet exchange interaction in eV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rAB</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># unit vector from COM of A to COM of B in A coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1"># euler rotation about z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mi">0</span>         <span class="c1"># euler rotation about x&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1"># euler rotation about z&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1"># anlge between B and z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span>          <span class="c1"># angle defining B direction in xy plane</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="mi">0</span>            <span class="c1"># magnetic field in Tesla</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_set_singlet_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_singlet_state</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span>
+        
+           
+    <span class="k">def</span> <span class="nf">_rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sin_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">sin_beta</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">cos_beta</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">sin_gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="n">cos_gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+        
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="n">cos_alpha</span><span class="o">*</span><span class="n">cos_gamma</span><span class="o">-</span><span class="n">sin_alpha</span><span class="o">*</span><span class="n">cos_beta</span><span class="o">*</span><span class="n">sin_gamma</span><span class="p">,</span>  <span class="n">sin_alpha</span><span class="o">*</span><span class="n">cos_gamma</span><span class="o">+</span><span class="n">cos_alpha</span><span class="o">*</span><span class="n">cos_beta</span><span class="o">*</span><span class="n">sin_gamma</span><span class="p">,</span> <span class="n">sin_beta</span><span class="o">*</span><span class="n">sin_gamma</span><span class="p">],</span>
+                      <span class="p">[</span><span class="o">-</span><span class="n">cos_alpha</span><span class="o">*</span><span class="n">sin_gamma</span><span class="o">-</span><span class="n">sin_alpha</span><span class="o">*</span><span class="n">cos_beta</span><span class="o">*</span><span class="n">cos_gamma</span><span class="p">,</span> <span class="o">-</span><span class="n">sin_alpha</span><span class="o">*</span><span class="n">sin_gamma</span><span class="o">+</span><span class="n">cos_alpha</span><span class="o">*</span><span class="n">cos_beta</span><span class="o">*</span><span class="n">cos_gamma</span><span class="p">,</span> <span class="n">sin_beta</span><span class="o">*</span><span class="n">cos_gamma</span><span class="p">],</span>
+                      <span class="p">[</span> <span class="n">sin_alpha</span><span class="o">*</span><span class="n">sin_beta</span>                              <span class="p">,</span> <span class="o">-</span><span class="n">cos_alpha</span><span class="o">*</span><span class="n">sin_beta</span>                              <span class="p">,</span> <span class="n">cos_beta</span>        <span class="p">]])</span>
+        <span class="k">return</span> <span class="n">R</span>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_A"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_A">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_zerofield_hamiltonian_molecule_A</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the zero-field Hamiltonian for molecule A.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Depends on D and E only.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">D3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="o">/</span><span class="mi">3</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">E</span>
+        <span class="n">H_ZF_A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">D3</span><span class="o">-</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">-</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">-</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">+</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">+</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">+</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">D3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">D3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">D3</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_A</span> <span class="o">=</span> <span class="n">H_ZF_A</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_zerofield_hamiltonian_single_molecule"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_single_molecule">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_zerofield_hamiltonian_single_molecule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the zero-field Hamiltonian for a single molecule.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Depends on D and E only.</span>
+<span class="sd">        </span>
+<span class="sd">        This is a precursor for calculating the zero-field Hamiltonian of molecule B.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">D3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="o">/</span><span class="mi">3</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">E</span>
+        <span class="n">H_ZF_SM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">D3</span><span class="o">-</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">D3</span><span class="o">+</span><span class="n">E</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">D3</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_SM</span> <span class="o">=</span> <span class="n">H_ZF_SM</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_B"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_B">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_zerofield_hamiltonian_molecule_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the zero-field Hamiltonian for molecule B.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Depends on alpha, beta and gamma.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span><span class="p">()</span>
+        <span class="n">H_ZF_SM_B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">R</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_SM</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+        <span class="n">H_ZF_B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+        <span class="n">H_ZF_B</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">H_ZF_SM_B</span>
+        <span class="n">H_ZF_B</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">H_ZF_SM_B</span>
+        <span class="n">H_ZF_B</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">H_ZF_SM_B</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_B</span> <span class="o">=</span> <span class="n">H_ZF_B</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_zeeman_hamiltonian"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_zeeman_hamiltonian">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_zeeman_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the Zeeman Hamiltonian.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Depends on theta and phi only.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Hx</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span> <span class="n">Hz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_projections</span><span class="p">()</span>
+        <span class="n">H_Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
+                        <span class="p">[</span> <span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hy</span><span class="p">],</span>
+                        <span class="p">[</span> <span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hz</span><span class="p">,</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hz</span><span class="p">,</span> <span class="n">Hy</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hz</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hx</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span><span class="o">-</span><span class="n">Hy</span><span class="p">,</span> <span class="n">Hx</span><span class="p">,</span>  <span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_Z</span> <span class="o">=</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">H_Z</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="SpinHamiltonian.calculate_dipoledipole_hamiltonian"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_dipoledipole_hamiltonian">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_dipoledipole_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the zintertriplet dipole-dipole Hamiltonian.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Depends on rAB only.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rAB</span>
+        <span class="n">H_dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>      <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">w</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">v</span><span class="p">],</span>
+                         <span class="p">[</span>      <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">w</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">],</span>
+                         <span class="p">[</span>      <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>       <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span>      <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">w</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">w</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">u</span><span class="p">],</span>
+                         <span class="p">[</span>  <span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">u</span><span class="p">,</span>       <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span>      <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span>  <span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>  <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">w</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">u</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">u</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>       <span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_dd</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">H_dd</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_exchange_hamiltonian"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_exchange_hamiltonian">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_exchange_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the exchange Hamiltonian.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Independent of any parameters.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">H_ex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_H_ex</span> <span class="o">=</span> <span class="n">H_ex</span>
+        <span class="k">return</span></div>
+        
+    <span class="k">def</span> <span class="nf">_calculate_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Hx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">)</span>
+        <span class="n">Hy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">)</span>
+        <span class="n">Hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Hx</span><span class="p">,</span> <span class="n">Hy</span><span class="p">,</span> <span class="n">Hz</span>
+        
+<div class="viewcode-block" id="SpinHamiltonian.calculate_hamiltonian"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_hamiltonian">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the total spin Hamiltonian.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        All the constituent parts must be calculated first.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_B</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_H_Z</span> \
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_A</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_ZF_B</span> \
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_H_dd</span> \
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">J</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_H_ex</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="SpinHamiltonian.calculate_eigenstates"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_eigenstates">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_eigenstates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the eigenvalues and eigenstates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenstates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">)</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="SpinHamiltonian.calculate_cslsq"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_cslsq">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_cslsq</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the overlaps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_singlet_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenstates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csl</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="SpinHamiltonian.calculate_everything"><a class="viewcode-back" href="../../../_pages/spin.html#tripletpairs.spin.SpinHamiltonian.calculate_everything">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_everything</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the Hamiltonian, eigenstates, eigenvalues and overlaps all at the same time.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_exchange_hamiltonian</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_single_molecule</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_molecule_A</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_molecule_B</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_dipoledipole_hamiltonian</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_zeeman_hamiltonian</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_hamiltonian</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_eigenstates</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_cslsq</span><span class="p">()</span>
+        <span class="k">return</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>

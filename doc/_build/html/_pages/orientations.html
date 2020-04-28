@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Molecular Orientations &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Spin Hamiltonian" href="spin.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spin.html" title="Spin Hamiltonian"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="molecular-orientations">
+<h1>Molecular Orientations<a class="headerlink" href="#molecular-orientations" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Computation of Euler angles and centre-of-mass vectors between the molecules of a triplet-pair can be done using the <a class="reference internal" href="#tripletpairs.toolkit.MolecularOrientation" title="tripletpairs.toolkit.MolecularOrientation"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.toolkit.MolecularOrientation</span></code></a> class. This will require the following steps to be performed in <a class="reference external" href="https://www.ccdc.cam.ac.uk/solutions/csd-system/components/mercury/">Mercury</a> first:</p>
+<ol class="arabic simple">
+<li><p>Open the CIF file in Mercury</p></li>
+<li><p>Enable packing checkbox</p></li>
+<li><p>Adjust the packing to show only the two molecules of interest (calculate -&gt; packing/slicing -&gt; adjust a, b, c)</p></li>
+<li><p>Bring up the atom list</p></li>
+<li><p>Ensure that <strong>only</strong> Xorth, Yorth and Zorth fields are shown (customise button)</p></li>
+<li><p>Click save and choose csv file type</p></li>
+<li><p>Record the number of two atoms in molecule A that lie parallel to the long-axis (x) and have the same y-coordinate</p></li>
+</ol>
+<p>The Euler angles and centre-of-mass vector can then be computed using <a class="reference internal" href="#tripletpairs.toolkit.MolecularOrientation" title="tripletpairs.toolkit.MolecularOrientation"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.toolkit.MolecularOrientation</span></code></a>.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">tripletpairs.toolkit</span> <span class="kn">import</span> <span class="n">MolecularOrientation</span>
+<span class="c1"># atoms parallel to molecular x-axis</span>
+<span class="n">longaxis_atom_labels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="c1"># load the csv file output from Mercury as a pandas DataFrame</span>
+<span class="n">atoms</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;mercury_file.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># use the class</span>
+<span class="n">mo</span> <span class="o">=</span> <span class="n">MolecularOrientation</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">longaxis_atom_labels</span><span class="p">)</span>
+<span class="n">mo</span><span class="o">.</span><span class="n">rotate_A2B</span><span class="p">()</span>
+<span class="n">mo</span><span class="o">.</span><span class="n">plot_3D</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tripletpairs.toolkit.MolecularOrientation">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.toolkit.</code><code class="sig-name descname">MolecularOrientation</code><span class="sig-paren">(</span><em class="sig-param">atoms_AB</em>, <em class="sig-param">atoms_Apx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/toolkit/molecularorientation.html#MolecularOrientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class to work out Euler angles for a pair of molecules.</p>
+<p>Refer to the examples for usage guidelines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms_AB</strong> (<em>pandas.DataFrame</em>) – Atom coordinates (cartesian), indexed by atom number. The first half should correspond to molecule A and the second half <strong>in the same order</strong> to molecule B.</p></li>
+<li><p><strong>atoms_Apx</strong> (<em>list of int</em>) – Atom numbers of two atoms parallel to the long axis (x) of molecule A. They must have the <strong>same</strong> y-coordinate.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="tripletpairs.toolkit.MolecularOrientation.atoms">
+<code class="sig-name descname">atoms</code><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal storage of the original atom coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.toolkit.MolecularOrientation.atoms_ApX">
+<code class="sig-name descname">atoms_ApX</code><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.atoms_ApX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coordinates of the two atoms parallel to x, with molecule A centred at the origin (3x2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">molA, molB</code></dt>
+<dd><p>Coordinates of the atoms in molecules A and B, in the molecular coordinate system of A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.toolkit.MolecularOrientation.molA_transformed">
+<code class="sig-name descname">molA_transformed</code><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.molA_transformed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coordinates of the atoms in molecules A mapped to molecule B, in the molecular coordinate system of A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.toolkit.MolecularOrientation.rAB">
+<code class="sig-name descname">rAB</code><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.rAB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Centre-of-mass vector from A to B, in the molecular coordinate system of A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.toolkit.MolecularOrientation.plot_3D">
+<code class="sig-name descname">plot_3D</code><span class="sig-paren">(</span><em class="sig-param">A=True</em>, <em class="sig-param">B=True</em>, <em class="sig-param">result=False</em>, <em class="sig-param">view=(30</em>, <em class="sig-param">30)</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/toolkit/molecularorientation.html#MolecularOrientation.plot_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.plot_3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a 3D plot of the atom positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot molecule A (blue). Should be aligned such that x is the long axis, y is the short axis and z is perpendicular to the molecular plane. The default is True.</p></li>
+<li><p><strong>B</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot molecule B (red). The default is True.</p></li>
+<li><p><strong>result</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the result of the transformation (black squares). Should overlap exactly with molecule B. The default is False.</p></li>
+<li><p><strong>view</strong> (<em>2-tuple of float</em><em>, </em><em>optional</em>) – Viewing angles for the 3D plot. The default is (30, 30).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.toolkit.MolecularOrientation.rotate_A2B">
+<code class="sig-name descname">rotate_A2B</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/toolkit/molecularorientation.html#MolecularOrientation.rotate_A2B"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.toolkit.MolecularOrientation.rotate_A2B" title="Permalink to this definition">¶</a></dt>
+<dd><p>Work out the Euler angles that would rotate A onto B.</p>
+<p class="rubric">Notes</p>
+<p>The results will be printed to the console.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Molecular Orientations</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spin.html"
+                        title="previous chapter">Spin Hamiltonian</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="next chapter">Models</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_pages/orientations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spin.html" title="Spin Hamiltonian"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>

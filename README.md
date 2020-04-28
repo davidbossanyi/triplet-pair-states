@@ -10,3 +10,6 @@ You should now be able to import the package using
 ```python
 import tripletpairs
 ```
+
+### Documentation
+View the documentation by opening **doc/\_build/html/index.html** in your browser.

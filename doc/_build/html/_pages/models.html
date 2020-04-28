@@ -1,0 +1,1530 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Models &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulations" href="simulations.html" />
+    <link rel="prev" title="Molecular Orientations" href="orientations.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="orientations.html" title="Molecular Orientations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="models">
+<h1>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The simulations work by solving kinetic models, i.e. systems of rate equations. In the steady-state, the time derivatives are set equal to zero, allowing an exact algebraic solution. For time-resolved simulations, the rate equations are integrated to obtain numerical excited-state populations as a function of time.</p>
+</div>
+<div class="section" id="diagrams">
+<h2>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h2>
+<p>Draw some pictures of the different models, showing states and rates!</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">timeresolvedmodels</span><span class="o">.</span><span class="n">Merrifield</span><span class="p">()</span>
+<span class="c1"># set the rate constants</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kGEN</span> <span class="o">=</span> <span class="mf">1.8</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">m</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kDISS</span> <span class="o">=</span> <span class="mf">5e-3</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTA</span> <span class="o">=</span> <span class="mf">1e-23</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kRELAX</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSSA</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.06</span>
+<span class="c1"># set the initial excitation density</span>
+<span class="n">m</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">1e17</span>
+<span class="c1"># simulate</span>
+<span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+<span class="c1"># get some results</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">simulation_results</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="time-resolved-models-api">
+<h2>Time-Resolved Models API<a class="headerlink" href="#time-resolved-models-api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.timeresolvedmodels.</code><code class="sig-name descname">MerrifieldExplicit1TT</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/timeresolvedmodels.html#MerrifieldExplicit1TT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for time-resolved simulations using a modified version of Merrifield’s model.</p>
+<p>The model explicity includes the <span class="math notranslate nohighlight">\(^1(TT)\)</span> state, and allows for decay
+of a single triplet in a <span class="math notranslate nohighlight">\((T..T)\)</span> state.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">MerrifieldExplicit1TT.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.t">
+<code class="sig-name descname">t</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.t" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array of time points for which to solve the rate equations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kGEN">
+<code class="sig-name descname">kGEN</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kGEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The rate at which <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">MerrifieldExplicit1TT.initial_state</span></code></a> is populated. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow ^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(^1(TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kHOP">
+<code class="sig-name descname">kHOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kHOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(^1(TT)\rightarrow (T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.k_HOP">
+<code class="sig-name descname">k_HOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.k_HOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow ^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kHOP2">
+<code class="sig-name descname">kHOP2</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kHOP2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow2\times T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTTA">
+<code class="sig-name descname">kTTA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(2\times T_1\rightarrow (T..T) or ^1(TT) or S_1\)</span>. See <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.TTA_channel" title="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.TTA_channel"><code class="xref py py-attr docutils literal notranslate"><span class="pre">MerrifieldExplicit1TT.TTA_channel</span></code></a>. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kRELAX">
+<code class="sig-name descname">kRELAX</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kRELAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for mixing between the <span class="math notranslate nohighlight">\((T..T)\)</span> states. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSSA">
+<code class="sig-name descname">kSSA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Singlet-singlet annihilation rate constant. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTNR">
+<code class="sig-name descname">kTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.kTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(T_1\)</span>, or one of the triplets in <span class="math notranslate nohighlight">\((T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.TTA_channel">
+<code class="sig-name descname">TTA_channel</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.TTA_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index determining the fate of free triplets. 1 gives <span class="math notranslate nohighlight">\(2\times T_1\rightarrow (T..T)\)</span>. 2 gives <span class="math notranslate nohighlight">\(2\times T_1\rightarrow ^1(TT)\)</span>. 3 gives <span class="math notranslate nohighlight">\(2\times T_1\rightarrow S_1\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulate" title="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.get_population_between">
+<code class="sig-name descname">get_population_between</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.get_population_between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates the dynamics of array between times t1 and t2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t1</strong> (<em>float</em>) – Integrate <strong>array</strong> from this time to…</p></li>
+<li><p><strong>t2</strong> (<em>float</em>) – This time.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>population</strong> – The integrated population.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.normalise_population_at">
+<code class="sig-name descname">normalise_population_at</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.normalise_population_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise array to time t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Time at which to normalise array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – The normalised population.</p></li>
+<li><p><strong>factor</strong> (<em>float</em>) – How much the original array was divided by.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.MerrifieldExplicit1TT.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.timeresolvedmodels.</code><code class="sig-name descname">Merrifield</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/timeresolvedmodels.html#Merrifield"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for steady-state simulations using Merrifield’s model.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Merrifield.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.t">
+<code class="sig-name descname">t</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.t" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array of time points for which to solve the rate equations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kGEN">
+<code class="sig-name descname">kGEN</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kGEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The rate at which <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Merrifield.initial_state</span></code></a> is populated. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kDISS">
+<code class="sig-name descname">kDISS</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kDISS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow2\times T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTTA">
+<code class="sig-name descname">kTTA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(2\times T_1\rightarrow (TT)\)</span>. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kRELAX">
+<code class="sig-name descname">kRELAX</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kRELAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for mixing between the <span class="math notranslate nohighlight">\((T..T)\)</span> states. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSSA">
+<code class="sig-name descname">kSSA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Singlet-singlet annihilation rate constant. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTNR">
+<code class="sig-name descname">kTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.kTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulate" title="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.get_population_between">
+<code class="sig-name descname">get_population_between</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.get_population_between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates the dynamics of array between times t1 and t2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t1</strong> (<em>float</em>) – Integrate <strong>array</strong> from this time to…</p></li>
+<li><p><strong>t2</strong> (<em>float</em>) – This time.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>population</strong> – The integrated population.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.normalise_population_at">
+<code class="sig-name descname">normalise_population_at</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.normalise_population_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise array to time t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Time at which to normalise array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – The normalised population.</p></li>
+<li><p><strong>factor</strong> (<em>float</em>) – How much the original array was divided by.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Merrifield.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.timeresolvedmodels.</code><code class="sig-name descname">Bardeen</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/timeresolvedmodels.html#Bardeen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for steady-state simulations using a modified version of Merrifield’s model.</p>
+<p>The model does not include free triplets. Instead Merrifield’s <span class="math notranslate nohighlight">\((TT)\)</span>
+states can separate to form 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states which can undergo spin
+relaxation. This is an approximation to triplet-diffusion in the limit of
+low excitation density.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Bardeen.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.t">
+<code class="sig-name descname">t</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.t" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array of time points for which to solve the rate equations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kGEN">
+<code class="sig-name descname">kGEN</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kGEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The rate at which <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state" title="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Bardeen.initial_state</span></code></a> is populated. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kHOP">
+<code class="sig-name descname">kHOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kHOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow (T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.k_HOP">
+<code class="sig-name descname">k_HOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.k_HOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kRELAX">
+<code class="sig-name descname">kRELAX</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kRELAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for mixing between the <span class="math notranslate nohighlight">\((T..T)\)</span> states. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSSA">
+<code class="sig-name descname">kSSA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Singlet-singlet annihilation rate constant. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSPIN">
+<code class="sig-name descname">kSPIN</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.kSPIN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulate" title="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.get_population_between">
+<code class="sig-name descname">get_population_between</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.get_population_between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates the dynamics of array between times t1 and t2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t1</strong> (<em>float</em>) – Integrate <strong>array</strong> from this time to…</p></li>
+<li><p><strong>t2</strong> (<em>float</em>) – This time.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>population</strong> – The integrated population.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.normalise_population_at">
+<code class="sig-name descname">normalise_population_at</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.normalise_population_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise array to time t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – 1D array containing a simulated excited-state population.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Time at which to normalise array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – The normalised population.</p></li>
+<li><p><strong>factor</strong> (<em>float</em>) – How much the original array was divided by.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tripletpairs.kineticmodelling.timeresolvedmodels.Bardeen.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="steady-state-models-api">
+<h2>Steady-State Models API<a class="headerlink" href="#steady-state-models-api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.steadystatemodels.</code><code class="sig-name descname">MerrifieldExplicit1TT</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#MerrifieldExplicit1TT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for steady-state simulations using a modified version of Merrifield’s model.</p>
+<p>The model explicity includes the <span class="math notranslate nohighlight">\(^1(TT)\)</span> state, and allows for decay
+of a single triplet in a <span class="math notranslate nohighlight">\((T..T)\)</span> state.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.initial_state" title="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">MerrifieldExplicit1TT.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow ^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(^1(TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kHOP">
+<code class="sig-name descname">kHOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kHOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(^1(TT)\rightarrow (T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.k_HOP">
+<code class="sig-name descname">k_HOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.k_HOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow ^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kHOP2">
+<code class="sig-name descname">kHOP2</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kHOP2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow2\times T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTTA">
+<code class="sig-name descname">kTTA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(2\times T_1\rightarrow (T..T)\)</span>. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(^1(TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTNR">
+<code class="sig-name descname">kTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.kTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(T_1\)</span>, or one of the triplets in <span class="math notranslate nohighlight">\((T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulate" title="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (float).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#MerrifieldExplicit1TT.simulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.steadystatemodels.</code><code class="sig-name descname">Merrifield</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#Merrifield"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for steady-state simulations using Merrifield’s model.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.initial_state" title="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Merrifield.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kDISS">
+<code class="sig-name descname">kDISS</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kDISS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow2\times T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTTA">
+<code class="sig-name descname">kTTA</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(2\times T_1\rightarrow (TT)\)</span>. Units of volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTNR">
+<code class="sig-name descname">kTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.kTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(T_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulate" title="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (float).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#Merrifield.simulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.steadystatemodels.</code><code class="sig-name descname">Bardeen</code><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#Bardeen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for steady-state simulations using a modified version of Merrifield’s model.</p>
+<p>The model does not include free triplets. Instead Merrifield’s <span class="math notranslate nohighlight">\((TT)\)</span>
+states can separate to form 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states which can undergo spin
+relaxation. This is an approximation to triplet-diffusion in the limit of
+low excitation density.</p>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the excited state species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the different rate constants in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.model_name">
+<code class="sig-name descname">model_name</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.initial_state">
+<code class="sig-name descname">initial_state</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the photoexcited state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.G">
+<code class="sig-name descname">G</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.G" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exciton generation rate for <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.initial_state" title="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.initial_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Bardeen.initial_state</span></code></a>. Units of per volume per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSF">
+<code class="sig-name descname">kSF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\(S_1\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.k_SF">
+<code class="sig-name descname">k_SF</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.k_SF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kHOP">
+<code class="sig-name descname">kHOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kHOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((TT)\rightarrow (T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.k_HOP">
+<code class="sig-name descname">k_HOP</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.k_HOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for <span class="math notranslate nohighlight">\((T..T)\rightarrow (TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kRELAX">
+<code class="sig-name descname">kRELAX</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kRELAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for mixing between the <span class="math notranslate nohighlight">\((T..T)\)</span> states. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSNR">
+<code class="sig-name descname">kSNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\(S_1\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kTTNR">
+<code class="sig-name descname">kTTNR</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kTTNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((TT)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSPIN">
+<code class="sig-name descname">kSPIN</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.kSPIN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate constant for the decay of <span class="math notranslate nohighlight">\((T..T)\)</span>. Units of per time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 <span class="math notranslate nohighlight">\((T..T)\)</span> states and the singlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulation_results">
+<code class="sig-name descname">simulation_results</code><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulation_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produced by <a class="reference internal" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulate" title="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a>. Keys are the excited-state names (str), values the simulated populations (float).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/steadystatemodels.html#Bardeen.simulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Models</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#diagrams">Diagrams</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#time-resolved-models-api">Time-Resolved Models API</a></li>
+<li><a class="reference internal" href="#steady-state-models-api">Steady-State Models API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="orientations.html"
+                        title="previous chapter">Molecular Orientations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="simulations.html"
+                        title="next chapter">Simulations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_pages/models.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="orientations.html" title="Molecular Orientations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>
