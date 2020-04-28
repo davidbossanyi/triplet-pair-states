@@ -6,6 +6,32 @@ import matplotlib.pyplot as plt
 
 
 class MolecularOrientation:
+    """
+    A class to work out Euler angles for a pair of molecules.
+    
+    Refer to the examples for usage guidelines.
+    
+    Parameters
+    ----------
+    atoms_AB : pandas.DataFrame
+        Atom coordinates (cartesian), indexed by atom number. The first half should correspond to molecule A and the second half **in the same order** to molecule B.
+    atoms_Apx : list of int
+        Atom numbers of two atoms parallel to the long axis (x) of molecule A. They must have the **same** y-coordinate.
+        
+    Attributes
+    ----------
+    atoms : pandas.DataFrame
+        Internal storage of the original atom coordinates.
+    atoms_ApX : numpy.ndarray
+        Coordinates of the two atoms parallel to x, with molecule A centred at the origin (3x2).
+    molA, molB : numpy.ndarray
+        Coordinates of the atoms in molecules A and B, in the molecular coordinate system of A.
+    molA_transformed : numpy.ndarray
+        Coordinates of the atoms in molecules A mapped to molecule B, in the molecular coordinate system of A.
+    rAB : numpy.ndarray
+        Centre-of-mass vector from A to B, in the molecular coordinate system of A.
+    
+    """
     
     def __init__(self, atoms_AB, atoms_Apx):
         if not isinstance(atoms_AB, pd.DataFrame):
@@ -63,6 +89,25 @@ class MolecularOrientation:
         return
     
     def plot_3D(self, A=True, B=True, result=False, view=(30, 30)):
+        """
+        Create a 3D plot of the atom positions.
+
+        Parameters
+        ----------
+        A : bool, optional
+            Whether to plot molecule A (blue). Should be aligned such that x is the long axis, y is the short axis and z is perpendicular to the molecular plane. The default is True.
+        B : bool, optional
+            Whether to plot molecule B (red). The default is True.
+        result : bool, optional
+            Whether to plot the result of the transformation (black squares). Should overlap exactly with molecule B. The default is False.
+        view : 2-tuple of float, optional
+            Viewing angles for the 3D plot. The default is (30, 30).
+
+        Returns
+        -------
+        None.
+
+        """
         fig = plt.figure(figsize=(8, 7))
         ax = fig.add_subplot(111, projection='3d')
         if A:
@@ -98,10 +143,6 @@ class MolecularOrientation:
     
     @staticmethod
     def _rotation_matrix(euler):
-        """
-        Computes the 3x3 rotation matrix using the Euler angles that would
-        rotate molecule A onto molecule B according to the zx'z'' convention.
-        """
         alpha, beta, gamma = euler
         
         sin_alpha = np.sin(alpha)
@@ -150,6 +191,18 @@ class MolecularOrientation:
         return x0
     
     def rotate_A2B(self):
+        """
+        Work out the Euler angles that would rotate A onto B.
+        
+        Notes
+        -----
+        The results will be printed to the console.
+
+        Returns
+        -------
+        None.
+
+        """
         print('\nfinding rotation from A to B\n')
         x0 = self._generate_initial_guess()
         x = least_squares(lambda x: self._residuals_AtoB(x), x0, method='lm', verbose=1).x

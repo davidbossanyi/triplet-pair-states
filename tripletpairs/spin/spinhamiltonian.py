@@ -1,74 +1,43 @@
-"""
-Contains the class SpinHamiltonian. This class can be used to calculate the
-overlaps of the triplet pair wavefunctions with the singlet triplet pair.
-
-The Hamiltonian is constructed following the procedure described by Tapping
-and Huang (https://doi.org/10.1021/acs.jpcc.6b04934).
-"""
-
 import numpy as np
 
 
 class SpinHamiltonian:
+    r"""
+    A class for calculating and using the spin Hamiltonian for (T..T) states.
+    
+    Attributes
+    ----------
+    mu_B : float
+        Value of the Bohr magneton in eV. Default is 5.788e-5.
+    g : float
+        Value of the electron g-factor. Default is 2.002.
+    J : float
+        Value of the intertriplet exchange energy in eV.
+    D, E: float
+        Values of the intratriplet zero-field splitting parameters in eV.
+    X : float
+        Value of the intertriplet dipole-dipole coupling strength in eV.
+    rAB : 3-tuple of float
+        Centre-of-mass vector (x, y, z) between the two molecules comprising the triplet-pair. Must be given in the molecular coordinate system of molecule A.
+    alpha, beta, gamma : float
+        Euler angles :math:`\alpha, \beta, \gamma` that would rotate molecule A onto molecule B using the ZX'Z'' convention, in radians. Must be calculated in the molecular coordinate system of molecule A.
+    theta, phi : float
+        Spherical polar angles :math:`\theta, \phi` defining the orientation of the magnetic field in the molecular coordinate system of molecule A.
+    B : float
+        Value of the external magnetic field strength in Tesla.
+    H : numpy.ndarray
+        The computed Hamiltonian matrix (9x9).
+    eigenvalues : numpy.ndarray
+        1D array containing the computed eigenvalues (the energies of the 9 (T..T) states).
+    eigenvectors : numpy.ndarray
+        The computed eigenvectors (columns).
+    csl : numpy.ndarray
+        1D array containing the overlap factors between the 9 eigenstates and the singlet. Complex numbers in general.
+    cslsq : numpy.ndarray
+        1D array containing the squared overlap factors between the 9 eigenstates and the singlet. These are what is used in kinetic models.
+    
     """
-    ABOUT
-    ---------------------------------------------------------------------------
-    A class containing methods for calculating and using the total spin
-    Hamiltonian for triplet-pair states (T..T).
     
-    The Hamiltonian is the sum of the Zeeman, zero-field and dipole-dipole 
-    terms.
-    
-    USAGE
-    ---------------------------------------------------------------------------
-    The D, E, and dipole-dipole interaction parameters can be adjusted as
-    required, for example:
-    
-    >>> sh = SpinHamiltonian()
-    >>> sh.D = 5.1e-6
-    >>> sh.E = 1.6e-7
-    >>> sh.X = 1.1e-9
-    >>> sh.J = 0
-    >>> sh.rAB = (0.7636, -0.4460, 0.4669)
-    >>> sh.alpha, sh.beta, sh.gamma = 0, 0, 0
-    >>> sh.theta, sh.phi = 0, 0
-    >>> sh.B = 0
-    
-    The individual parts of the hamiltonian must be calculated separately:
-    
-    >>> sh.calculate_exchange_hamiltonian()
-    >>> sh.calculate_zerofield_hamiltonian_single_molecule()
-    >>> sh.calculate_zerofield_hamiltonian_molecule_A()
-    >>> sh.calculate_dipoledipole_hamiltonian()
-    >>> sh.calculate_zerofield_hamiltonian_molecule_B()
-    >>> sh.calculate_zeeman_hamiltonian()
-    
-    >>> sh.calculate_hamiltonian()
-    
-    Then the quantities of interest can be calculated:
-    
-    >>> sh.calculate_eigenstates()
-    >>> sh.calculate_cslsq()
-    
-    And accessed as attributes:
-        
-    >>> cslsq = sh.cslsq
-    >>> eigenvalues = sh.eigenvalues
-    >>> eigenstates = sh.eigenstates
-    
-    DETAILS
-    ---------------------------------------------------------------------------
-    uses constants:
-        hbar = 1
-    uses units:
-        B:      tesla
-        angles: radians
-        energy: electronvolt 
-    uses zero-field basis states:
-        (x,x) (x,y) (x,z) (y,x) (y,y) (y,z) (z,x) (z,y) (z,z)
-    uses Euler angle convention:
-        ZX'Z''
-    """
     def __init__(self):
         self._set_constants()
         self._initialise_parameters()
@@ -99,10 +68,6 @@ class SpinHamiltonian:
         
            
     def _rotation_matrix(self):
-        """
-        Computes the 3x3 rotation matrix using the Euler angles that would
-        rotate molecule A onto molecule B according to the zx'z'' convention.
-        """
         sin_alpha = np.sin(self.alpha)
         cos_alpha = np.cos(self.alpha)
         sin_beta  = np.sin(self.beta)
@@ -117,7 +82,16 @@ class SpinHamiltonian:
     
     def calculate_zerofield_hamiltonian_molecule_A(self):
         """
-        Depends on E, D
+        Calculate the zero-field Hamiltonian for molecule A.
+        
+        Notes
+        -----
+        Depends on D and E only.
+
+        Returns
+        -------
+        None.
+
         """
         D3 = self.D/3
         E = self.E
@@ -135,7 +109,18 @@ class SpinHamiltonian:
     
     def calculate_zerofield_hamiltonian_single_molecule(self):
         """
-        Depends on E, D
+        Calculate the zero-field Hamiltonian for a single molecule.
+        
+        Notes
+        -----
+        Depends on D and E only.
+        
+        This is a precursor for calculating the zero-field Hamiltonian of molecule B.
+
+        Returns
+        -------
+        None.
+
         """
         D3 = self.D/3
         E = self.E
@@ -147,7 +132,16 @@ class SpinHamiltonian:
     
     def calculate_zerofield_hamiltonian_molecule_B(self):
         """
-        Depends on E, D, alpha, beta, gamma
+        Calculate the zero-field Hamiltonian for molecule B.
+        
+        Notes
+        -----
+        Depends on alpha, beta and gamma.
+
+        Returns
+        -------
+        None.
+
         """
         R = self._rotation_matrix()
         H_ZF_SM_B = np.matmul(np.transpose(R), np.matmul(self._H_ZF_SM, R))
@@ -160,7 +154,16 @@ class SpinHamiltonian:
     
     def calculate_zeeman_hamiltonian(self):
         """
-        Depends on theta, phi, later multiplied by g.muB.B
+        Calculate the Zeeman Hamiltonian.
+        
+        Notes
+        -----
+        Depends on theta and phi only.
+
+        Returns
+        -------
+        None.
+
         """
         Hx, Hy, Hz = self._calculate_projections()
         H_Z = np.array([[  0,-Hz, Hy,-Hz,  0,  0, Hy,  0,  0],
@@ -177,7 +180,16 @@ class SpinHamiltonian:
         
     def calculate_dipoledipole_hamiltonian(self):
         """
-        Depends on rAB, later multiplied by X
+        Calculate the zintertriplet dipole-dipole Hamiltonian.
+        
+        Notes
+        -----
+        Depends on rAB only.
+
+        Returns
+        -------
+        None.
+
         """
         u, v, w = self.rAB
         H_dd = np.array([[      0,       0,       0,       0, 1-3*w*w,   3*v*w,       0,   3*v*w, 1-3*v*v],
@@ -194,7 +206,16 @@ class SpinHamiltonian:
     
     def calculate_exchange_hamiltonian(self):
         """
-        Depends on nothing, later multiplied by J
+        Calculate the exchange Hamiltonian.
+        
+        Notes
+        -----
+        Independent of any parameters.
+
+        Returns
+        -------
+        None.
+
         """
         H_ex = np.array([[0, 0, 0, 0, 1, 0, 0, 0, 1],
                          [0, 0, 0,-1, 0, 0, 0, 0, 0],
@@ -209,9 +230,6 @@ class SpinHamiltonian:
         return
         
     def _calculate_projections(self):
-        """
-        Projections of the B unit vector onto the x,y,z axis of molecule A
-        """
         Hx = np.sin(self.theta)*np.cos(self.phi)
         Hy = np.sin(self.theta)*np.sin(self.phi)
         Hz = np.cos(self.theta)
@@ -219,7 +237,16 @@ class SpinHamiltonian:
         
     def calculate_hamiltonian(self):
         """
-        Depends on everything
+        Calculate the total spin Hamiltonian.
+        
+        Notes
+        -----
+        All the constituent parts must be calculated first.
+
+        Returns
+        -------
+        None.
+
         """
         self.H = self.g*self.mu_B*self.B*self._H_Z \
                     + self._H_ZF_A + self._H_ZF_B \
@@ -229,14 +256,24 @@ class SpinHamiltonian:
         
     def calculate_eigenstates(self):
         """
-        Depends on everything
+        Calculate the eigenvalues and eigenstates.
+
+        Returns
+        -------
+        None.
+
         """
         self.eigenvalues, self.eigenstates = np.linalg.eigh(self.H)
         return
         
     def calculate_cslsq(self):
         """
-        Depends on everything
+        Calculate the overlaps.
+
+        Returns
+        -------
+        None.
+
         """
         self.csl = np.matmul(self._singlet_state, self.eigenstates)
         self.cslsq = np.abs(self.csl)**2
@@ -244,8 +281,12 @@ class SpinHamiltonian:
     
     def calculate_everything(self):
         """
-        If no averaging is required, this saves typing out all the separate
-        calculation steps
+        Calculate the Hamiltonian, eigenstates, eigenvalues and overlaps all at the same time.
+
+        Returns
+        -------
+        None.
+
         """
         self.calculate_exchange_hamiltonian()
         self.calculate_zerofield_hamiltonian_single_molecule()

@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Spin Hamiltonian &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Molecular Orientations" href="orientations.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="orientations.html" title="Molecular Orientations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spin-hamiltonian">
+<h1>Spin Hamiltonian<a class="headerlink" href="#spin-hamiltonian" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The Hamiltonian is the sum of the Zeeman, zero-field, intertriplet dipole-dipole and intertriplet exchange terms.</p>
+<p>For details, refer to <a class="reference external" href="https://doi.org/10.1021/acs.jpcc.6b04934">this paper</a>.</p>
+<p>The class uses:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\hbar=1\)</span></p></li>
+<li><p>Tesla for magnetic field strength</p></li>
+<li><p>electronvolts for energies</p></li>
+<li><p>radians for angles</p></li>
+<li><p>ZX’Z’’ convention for Euler angles</p></li>
+<li><p>the molecular system of molecule A throughout, which takes the x-axis parallel to the long molecular axis, the y-axis parallel to the short molecular axis and the z-axis perpendicular to the plane of the molecular backbone</p></li>
+</ul>
+<p>The zero-field basis is used for the construction of the Hamiltonian:</p>
+<div class="math notranslate nohighlight">
+\[\{|\phi_i\rangle\}=\{|xx\rangle, |xy\rangle, |xz\rangle, |yx\rangle, |yy\rangle, |yz\rangle, |zx\rangle, |zy\rangle, |zz\rangle\}\]</div>
+<p>The <a class="reference internal" href="#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a> can be used to compute the total spin Hamiltonian, its eigenvectors and eigenvalues and the overlap factors <span class="math notranslate nohighlight">\(|C_S^l|^2\)</span> that are required for further simulations.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tripletpairs.spin</span> <span class="kn">import</span> <span class="n">SpinHamiltonian</span>
+<span class="c1"># set the parameters</span>
+<span class="n">sh</span> <span class="o">=</span> <span class="n">SpinHamiltonian</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mf">5.1e-6</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="mf">1.6e-7</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="mf">1.1e-9</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">J</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">rAB</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.7636</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4460</span><span class="p">,</span> <span class="mf">0.4669</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># the individual parts of the hamiltonian must be calculated separately</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_exchange_hamiltonian</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_single_molecule</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_molecule_A</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_dipoledipole_hamiltonian</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_zerofield_hamiltonian_molecule_B</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_zeeman_hamiltonian</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_hamiltonian</span><span class="p">()</span>
+<span class="c1"># then the quantities of interest can be calculated</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_eigenstates</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_cslsq</span><span class="p">()</span>
+<span class="c1"># and accessed as attributes:</span>
+<span class="n">cslsq</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">cslsq</span>
+<span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">eigenvalues</span>
+<span class="n">eigenstates</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">eigenstates</span>
+<span class="c1"># alternatively, calculate everything all at once</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">calculate_everything</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tripletpairs.spin.SpinHamiltonian">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.spin.</code><code class="sig-name descname">SpinHamiltonian</code><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for calculating and using the spin Hamiltonian for (T..T) states.</p>
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.mu_B">
+<code class="sig-name descname">mu_B</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.mu_B" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of the Bohr magneton in eV. Default is 5.788e-5.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.g">
+<code class="sig-name descname">g</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of the electron g-factor. Default is 2.002.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.J">
+<code class="sig-name descname">J</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.J" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of the intertriplet exchange energy in eV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">D, E</code></dt>
+<dd><p>Values of the intratriplet zero-field splitting parameters in eV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.X">
+<code class="sig-name descname">X</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of the intertriplet dipole-dipole coupling strength in eV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.rAB">
+<code class="sig-name descname">rAB</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.rAB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Centre-of-mass vector (x, y, z) between the two molecules comprising the triplet-pair. Must be given in the molecular coordinate system of molecule A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>3-tuple of float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">alpha, beta, gamma</code></dt>
+<dd><p>Euler angles <span class="math notranslate nohighlight">\(\alpha, \beta, \gamma\)</span> that would rotate molecule A onto molecule B using the ZX’Z’’ convention, in radians. Must be calculated in the molecular coordinate system of molecule A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">theta, phi</code></dt>
+<dd><p>Spherical polar angles <span class="math notranslate nohighlight">\(\theta, \phi\)</span> defining the orientation of the magnetic field in the molecular coordinate system of molecule A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.B">
+<code class="sig-name descname">B</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.B" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of the external magnetic field strength in Tesla.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.H">
+<code class="sig-name descname">H</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.H" title="Permalink to this definition">¶</a></dt>
+<dd><p>The computed Hamiltonian matrix (9x9).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.eigenvalues">
+<code class="sig-name descname">eigenvalues</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.eigenvalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the computed eigenvalues (the energies of the 9 (T..T) states).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.eigenvectors">
+<code class="sig-name descname">eigenvectors</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.eigenvectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>The computed eigenvectors (columns).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.csl">
+<code class="sig-name descname">csl</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.csl" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the overlap factors between the 9 eigenstates and the singlet. Complex numbers in general.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.spin.SpinHamiltonian.cslsq">
+<code class="sig-name descname">cslsq</code><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>1D array containing the squared overlap factors between the 9 eigenstates and the singlet. These are what is used in kinetic models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_cslsq">
+<code class="sig-name descname">calculate_cslsq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_cslsq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_cslsq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the overlaps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_dipoledipole_hamiltonian">
+<code class="sig-name descname">calculate_dipoledipole_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_dipoledipole_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_dipoledipole_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the zintertriplet dipole-dipole Hamiltonian.</p>
+<p class="rubric">Notes</p>
+<p>Depends on rAB only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_eigenstates">
+<code class="sig-name descname">calculate_eigenstates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_eigenstates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_eigenstates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the eigenvalues and eigenstates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_everything">
+<code class="sig-name descname">calculate_everything</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_everything"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_everything" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Hamiltonian, eigenstates, eigenvalues and overlaps all at the same time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_exchange_hamiltonian">
+<code class="sig-name descname">calculate_exchange_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_exchange_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_exchange_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the exchange Hamiltonian.</p>
+<p class="rubric">Notes</p>
+<p>Independent of any parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_hamiltonian">
+<code class="sig-name descname">calculate_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the total spin Hamiltonian.</p>
+<p class="rubric">Notes</p>
+<p>All the constituent parts must be calculated first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_zeeman_hamiltonian">
+<code class="sig-name descname">calculate_zeeman_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_zeeman_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_zeeman_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Zeeman Hamiltonian.</p>
+<p class="rubric">Notes</p>
+<p>Depends on theta and phi only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_A">
+<code class="sig-name descname">calculate_zerofield_hamiltonian_molecule_A</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_A"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_A" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the zero-field Hamiltonian for molecule A.</p>
+<p class="rubric">Notes</p>
+<p>Depends on D and E only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_B">
+<code class="sig-name descname">calculate_zerofield_hamiltonian_molecule_B</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_B"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_molecule_B" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the zero-field Hamiltonian for molecule B.</p>
+<p class="rubric">Notes</p>
+<p>Depends on alpha, beta and gamma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_single_molecule">
+<code class="sig-name descname">calculate_zerofield_hamiltonian_single_molecule</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/spin/spinhamiltonian.html#SpinHamiltonian.calculate_zerofield_hamiltonian_single_molecule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.spin.SpinHamiltonian.calculate_zerofield_hamiltonian_single_molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the zero-field Hamiltonian for a single molecule.</p>
+<p class="rubric">Notes</p>
+<p>Depends on D and E only.</p>
+<p>This is a precursor for calculating the zero-field Hamiltonian of molecule B.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Spin Hamiltonian</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="orientations.html"
+                        title="next chapter">Molecular Orientations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_pages/spin.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="orientations.html" title="Molecular Orientations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>

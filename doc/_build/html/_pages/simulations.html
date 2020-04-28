@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Simulations &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Models" href="models.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="simulations">
+<h1>Simulations<a class="headerlink" href="#simulations" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation" title="tripletpairs.kineticmodelling.KineticSimulation"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.kineticmodelling.KineticSimulation</span></code></a> class provides a convenient wrapper for performing simulations, incorporating both time-resolved and steady-state models, full spin Hamiltonian, magnetic field effects and averaging over things like euler angles to mimic amorphous morphologies.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tripletpairs.kineticmodelling</span> <span class="kn">import</span> <span class="n">timeresolvedmodels</span>
+<span class="kn">from</span> <span class="nn">tripletpairs.kineticmodelling</span> <span class="kn">import</span> <span class="n">KineticSimulation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># set up the kinetic model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">timeresolvedmodels</span><span class="o">.</span><span class="n">Merrifield</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kGEN</span> <span class="o">=</span> <span class="mf">1.8</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">m</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kDISS</span> <span class="o">=</span> <span class="mf">5e-3</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTA</span> <span class="o">=</span> <span class="mf">1e-23</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kRELAX</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSSA</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.06</span>
+<span class="n">m</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">1e17</span>
+<span class="c1"># set up the magnetic parameters</span>
+<span class="n">J</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">D</span> <span class="o">=</span> <span class="mf">5e-6</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">D</span><span class="o">/</span><span class="mi">3</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">D</span><span class="o">/</span><span class="mi">1000</span>
+<span class="n">rAB</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">86.37</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">86.37</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">))</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">118.32</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+<span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="c1"># do the simulation</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">KineticSimulation</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">set_spin_hamiltonian_parameters</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">rAB</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">simulate_state_populations</span><span class="p">([</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">])</span>
+<span class="n">mfe1</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_mfe</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
+<span class="n">mfe2</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_mfe</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation">
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.</code><code class="sig-name descname">KineticSimulation</code><span class="sig-paren">(</span><em class="sig-param">kinetic_model</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper class for performing general rate-model-based simulations.</p>
+<p>Averaging over certain spin Hamiltonian parameters is taken care of. This
+allows the user to simulate the effect of randomly oriented molecules
+(amorphous morphology) or randomly oriented crystallites
+(polycrystalline morphology). Refer to the examples for usage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kinetic_model</strong> (<em>model instance</em>) – An instance of one of the kinetic models, either steady-state or time-resolved.</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.spin_hamiltonian">
+<code class="sig-name descname">spin_hamiltonian</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.spin_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of the <a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian">tripletpairs.spin.SpinHamiltonian</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.kinetic_model">
+<code class="sig-name descname">kinetic_model</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.kinetic_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of one of the kinetic models, either steady-state or time-resolved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>model instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.state_populations">
+<code class="sig-name descname">state_populations</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.state_populations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Created by <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_state_populations()</span></code></a>. Keys are excited-state names, values are numpy arrays. Rows are times and columns are magnetic field strengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.eigenvalues">
+<code class="sig-name descname">eigenvalues</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.eigenvalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eigenvalues of the triplet-pair states, optionally created by <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_state_populations()</span></code></a>. Rows are the 9 states, columns are magnetic field strengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.calculate_mfe">
+<code class="sig-name descname">calculate_mfe</code><span class="sig-paren">(</span><em class="sig-param">state='S1'</em>, <em class="sig-param">time_range=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.calculate_mfe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.calculate_mfe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the magnetic field effect for a given excited-state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the excited-state to use. The default is ‘S1’.</p></li>
+<li><p><strong>time_range</strong> (<em>2-tuple of float</em><em>, </em><em>optional</em>) – The times between which to evaluate the MFE, for time-resolved simulations. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a time_range is specified for a non-time-resolved simulation or vice versa.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>mfe</strong> – The calculated magnetic field effect, evaluated as <span class="math notranslate nohighlight">\(\Delta PL/PL\)</span>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.set_spin_hamiltonian_parameters">
+<code class="sig-name descname">set_spin_hamiltonian_parameters</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">X</em>, <em class="sig-param">rAB</em>, <em class="sig-param">D</em>, <em class="sig-param">E</em>, <em class="sig-param">alpha</em>, <em class="sig-param">beta</em>, <em class="sig-param">gamma</em>, <em class="sig-param">B</em>, <em class="sig-param">theta</em>, <em class="sig-param">phi</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.set_spin_hamiltonian_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.set_spin_hamiltonian_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input the parameters for the quantum-mechanical part of the simulation.</p>
+<p>Refer to <a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>J</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Value of the intertriplet exchange energy in eV. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+<li><p><strong>X</strong> (<em>float</em>) – Value of the intertriplet dipole-dipole coupling strength in eV.</p></li>
+<li><p><strong>rAB</strong> (<em>3-tuple of float</em>) – Centre-of-mass vector (x, y, z) between the two molecules comprising the triplet-pair. Must be given in the molecular coordinate system of molecule A.</p></li>
+<li><p><strong>D</strong> (<em>float</em>) – Value of the intratriplet zero-field splitting parameter D in eV.</p></li>
+<li><p><strong>E</strong> (<em>float</em>) – Value of the intratriplet zero-field splitting parameter E in eV.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Euler angle <span class="math notranslate nohighlight">\(\alpha\)</span> that would rotate molecule A onto molecule B using the ZX’Z’’ convention, in radians. Must be calculated in the molecular coordinate system of molecule A. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Euler angle <span class="math notranslate nohighlight">\(\beta\)</span> that would rotate molecule A onto molecule B using the ZX’Z’’ convention, in radians. Must be calculated in the molecular coordinate system of molecule A. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Euler angle <span class="math notranslate nohighlight">\(\gamma\)</span> that would rotate molecule A onto molecule B using the ZX’Z’’ convention, in radians. Must be calculated in the molecular coordinate system of molecule A. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+<li><p><strong>B</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Value of the external magnetic field strength in Tesla. If given as a 1D array, the simulation will be performed at each value in the array thereby allowing subsequent calculation of magnetic field effects.</p></li>
+<li><p><strong>theta</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Spherical polar angle <span class="math notranslate nohighlight">\(\theta\)</span> defining the orientation of the magnetic field in the molecular coordinate system of molecule A. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+<li><p><strong>phi</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – Spherical polar angle <span class="math notranslate nohighlight">\(\phi\)</span> defining the orientation of the magnetic field in the molecular coordinate system of molecule A. If given as a 1D array, the simulation will computed for each value and the results averaged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations">
+<code class="sig-name descname">simulate_state_populations</code><span class="sig-paren">(</span><em class="sig-param">states</em>, <em class="sig-param">return_eigenvalues=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.simulate_state_populations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the simulation.</p>
+<p>The results are stored in <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.state_populations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">KineticSimulation.state_populations</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>states</strong> (<em>list of str</em>) – The excited-states to evaluate. These will be the keys of <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.state_populations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">KineticSimulation.state_populations</span></code></a>.</p></li>
+<li><p><strong>return_eigenvalues</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, also calculate the eigenvalues of the triplet-pair states. The default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulations</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="previous chapter">Models</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_pages/simulations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>

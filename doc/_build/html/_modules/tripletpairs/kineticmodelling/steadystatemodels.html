@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tripletpairs.kineticmodelling.steadystatemodels &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tripletpairs.kineticmodelling.steadystatemodels</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">._base</span> <span class="kn">import</span> <span class="n">SteadyStateModel</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="MerrifieldExplicit1TT"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT">[docs]</a><span class="k">class</span> <span class="nc">MerrifieldExplicit1TT</span><span class="p">(</span><span class="n">SteadyStateModel</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for steady-state simulations using a modified version of Merrifield&#39;s model.</span>
+<span class="sd">    </span>
+<span class="sd">    The model explicity includes the :math:`^1(TT)` state, and allows for decay</span>
+<span class="sd">    of a single triplet in a :math:`(T..T)` state.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    states : list of str</span>
+<span class="sd">        The names of the excited state species.</span>
+<span class="sd">    rates : list of str</span>
+<span class="sd">        The names of the different rate constants in the model.</span>
+<span class="sd">    model_name : str</span>
+<span class="sd">        The name of the model.</span>
+<span class="sd">    initial_state : str</span>
+<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    G : float</span>
+<span class="sd">        The exciton generation rate for :attr:`MerrifieldExplicit1TT.initial_state`. Units of per volume per time.</span>
+<span class="sd">    kSF : float</span>
+<span class="sd">        Rate constant for :math:`S_1\rightarrow ^1(TT)`. Units of per time.</span>
+<span class="sd">    k_SF : float</span>
+<span class="sd">        Rate constant for :math:`^1(TT)\rightarrow S_1`. Units of per time.</span>
+<span class="sd">    kHOP : float</span>
+<span class="sd">        Rate constant for :math:`^1(TT)\rightarrow (T..T)`. Units of per time.</span>
+<span class="sd">    k_HOP : float</span>
+<span class="sd">        Rate constant for :math:`(T..T)\rightarrow ^1(TT)`. Units of per time.</span>
+<span class="sd">    kHOP2 : float</span>
+<span class="sd">        Rate constant for :math:`(T..T)\rightarrow2\times T_1`. Units of per time.</span>
+<span class="sd">    kTTA : float</span>
+<span class="sd">        Rate constant for :math:`2\times T_1\rightarrow (T..T)`. Units of volume per time.</span>
+<span class="sd">    kSNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`S_1`. Units of per time.</span>
+<span class="sd">    kTTNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`^1(TT)`. Units of per time.</span>
+<span class="sd">    kTNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`T_1`, or one of the triplets in :math:`(T..T)`. Units of per time.</span>
+<span class="sd">    cslsq : numpy.ndarray</span>
+<span class="sd">        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.</span>
+<span class="sd">    simulation_results : dict</span>
+<span class="sd">        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (float).</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;MerrifieldExplicit1TT&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">12</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT&#39;</span><span class="p">,</span> <span class="s1">&#39;T_T_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP&#39;</span><span class="p">,</span> <span class="s1">&#39;k_HOP&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP2&#39;</span><span class="p">,</span> <span class="s1">&#39;KTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
+        <span class="c1"># rates between excited states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span> <span class="o">=</span> <span class="mf">2.5e-4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span> <span class="o">=</span> <span class="mf">1e-5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span> <span class="o">=</span> <span class="mf">1e-18</span>
+        <span class="c1"># rates of decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+        <span class="c1"># cslsq values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="MerrifieldExplicit1TT.simulate"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the simulation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_generation_rates</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_intermediate_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_T1</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_other_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
+        <span class="k">return</span></div>
+        
+    <span class="k">def</span> <span class="nf">_calculate_intermediate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bST</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aT</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GTp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">))</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GS</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aS</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_T1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_aT</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_bST</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_aS</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_bT</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bST</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GTp</span><span class="p">)</span>
+        <span class="n">T1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quadratic_formula</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_root</span><span class="p">(</span><span class="n">T1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T1</span> <span class="o">=</span> <span class="n">T1</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_other_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TT</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aS</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">))</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">TT</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GS</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="n">T_T_i</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">TT</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span> <span class="o">+=</span> <span class="n">T_T_i</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_wrap_simulation_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">S1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="p">]))</span>
+        <span class="k">return</span></div>
+    
+    
+<div class="viewcode-block" id="Merrifield"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.Merrifield">[docs]</a><span class="k">class</span> <span class="nc">Merrifield</span><span class="p">(</span><span class="n">SteadyStateModel</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for steady-state simulations using Merrifield&#39;s model.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    states : list of str</span>
+<span class="sd">        The names of the excited state species.</span>
+<span class="sd">    rates : list of str</span>
+<span class="sd">        The names of the different rate constants in the model.</span>
+<span class="sd">    model_name : str</span>
+<span class="sd">        The name of the model.</span>
+<span class="sd">    initial_state : str</span>
+<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    G : float</span>
+<span class="sd">        The exciton generation rate for :attr:`Merrifield.initial_state`. Units of per volume per time.</span>
+<span class="sd">    kSF : float</span>
+<span class="sd">        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.</span>
+<span class="sd">    k_SF : float</span>
+<span class="sd">        Rate constant for :math:`(TT)\rightarrow S_1`. Units of per time.</span>
+<span class="sd">    kDISS : float</span>
+<span class="sd">        Rate constant for :math:`(TT)\rightarrow2\times T_1`. Units of per time.</span>
+<span class="sd">    kTTA : float</span>
+<span class="sd">        Rate constant for :math:`2\times T_1\rightarrow (TT)`. Units of volume per time.</span>
+<span class="sd">    kSNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`S_1`. Units of per time.</span>
+<span class="sd">    kTTNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`(TT)`. Units of per time.</span>
+<span class="sd">    kTNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`T_1`. Units of per time.</span>
+<span class="sd">    cslsq : numpy.ndarray</span>
+<span class="sd">        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.</span>
+<span class="sd">    simulation_results : dict</span>
+<span class="sd">        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (float).</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;Merrifield&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">11</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_bright&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kDISS&#39;</span><span class="p">,</span> <span class="s1">&#39;KTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
+        <span class="c1"># rates between excited states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span> <span class="o">=</span> <span class="mf">1e-18</span>
+        <span class="c1"># rates of decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+        <span class="c1"># cslsq values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="Merrifield.simulate"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.Merrifield.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the simulation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_generation_rates</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_intermediate_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_T1</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_other_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
+        <span class="k">return</span></div>
+        
+    <span class="k">def</span> <span class="nf">_calculate_intermediate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bST</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aT</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GTp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aS</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">))</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_T1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_aT</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_bST</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_aS</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_bT</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bST</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GTp</span><span class="p">)</span>
+        <span class="n">T1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quadratic_formula</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_root</span><span class="p">(</span><span class="n">T1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T1</span> <span class="o">=</span> <span class="n">T1</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_other_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aS</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_bS</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="n">TT_i</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">S1</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kDISS</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span> <span class="o">+=</span> <span class="n">TT_i</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">TT_i</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_wrap_simulation_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">S1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T1</span><span class="p">]))</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="Bardeen"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.Bardeen">[docs]</a><span class="k">class</span> <span class="nc">Bardeen</span><span class="p">(</span><span class="n">SteadyStateModel</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for steady-state simulations using a modified version of Merrifield&#39;s model.</span>
+<span class="sd">    </span>
+<span class="sd">    The model does not include free triplets. Instead Merrifield&#39;s :math:`(TT)`</span>
+<span class="sd">    states can separate to form 9 :math:`(T..T)` states which can undergo spin</span>
+<span class="sd">    relaxation. This is an approximation to triplet-diffusion in the limit of</span>
+<span class="sd">    low excitation density.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    states : list of str</span>
+<span class="sd">        The names of the excited state species.</span>
+<span class="sd">    rates : list of str</span>
+<span class="sd">        The names of the different rate constants in the model.</span>
+<span class="sd">    model_name : str</span>
+<span class="sd">        The name of the model.</span>
+<span class="sd">    initial_state : str</span>
+<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    G : float</span>
+<span class="sd">        The exciton generation rate for :attr:`Bardeen.initial_state`. Units of per volume per time.</span>
+<span class="sd">    kSF : float</span>
+<span class="sd">        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.</span>
+<span class="sd">    k_SF : float</span>
+<span class="sd">        Rate constant for :math:`(TT)\rightarrow S_1`. Units of per time.</span>
+<span class="sd">    kHOP : float</span>
+<span class="sd">        Rate constant for :math:`(TT)\rightarrow (T..T)`. Units of per time.</span>
+<span class="sd">    k_HOP : float</span>
+<span class="sd">        Rate constant for :math:`(T..T)\rightarrow (TT)`. Units of per time.</span>
+<span class="sd">    kRELAX : float</span>
+<span class="sd">        Rate constant for mixing between the :math:`(T..T)` states. Units of per time.</span>
+<span class="sd">    kSNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`S_1`. Units of per time.</span>
+<span class="sd">    kTTNR : float</span>
+<span class="sd">        Rate constant for the decay of :math:`(TT)`. Units of per time.</span>
+<span class="sd">    kSPIN : float</span>
+<span class="sd">        Rate constant for the decay of :math:`(T..T)`. Units of per time.</span>
+<span class="sd">    cslsq : numpy.ndarray</span>
+<span class="sd">        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.</span>
+<span class="sd">    simulation_results : dict</span>
+<span class="sd">        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (float).</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;Bardeen&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">19</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_bright&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T_T_total&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP&#39;</span><span class="p">,</span> <span class="s1">&#39;k_HOP&#39;</span><span class="p">,</span> <span class="s1">&#39;kRELAX&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kSPIN&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">}</span>
+        <span class="c1"># rates between excited states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span> <span class="o">=</span> <span class="mf">2.5e-4</span>
+        <span class="c1"># spin relaxation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kRELAX</span> <span class="o">=</span> <span class="mf">0.033</span>
+        <span class="c1"># rates of decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">0.067</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kSPIN</span> <span class="o">=</span> <span class="mf">2.5e-4</span>
+        <span class="c1"># cslsq values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="Bardeen.simulate"><a class="viewcode-back" href="../../../_pages/models.html#tripletpairs.kineticmodelling.steadystatemodels.Bardeen.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the simulation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_generation_rates</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_generation_rate_matrix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_rate_equation_matrix</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_simulation</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
+        <span class="k">return</span></div>
+    
+    <span class="k">def</span> <span class="nf">_generate_rate_equation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="mi">10</span><span class="p">:,</span> <span class="mi">10</span><span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">8</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kRELAX</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSPIN</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kRELAX</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_generate_generation_rate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_unpack_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span> <span class="o">+=</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span> <span class="o">+=</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_wrap_simulation_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">S1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_bright</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TT_total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_T_total</span><span class="p">]))</span>
+        <span class="k">return</span> </div>
+       
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>

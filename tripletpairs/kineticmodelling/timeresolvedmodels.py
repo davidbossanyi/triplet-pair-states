@@ -3,15 +3,64 @@ import numpy as np
 
 
 class MerrifieldExplicit1TT(TimeResolvedModel):
+    r"""
+    A class for time-resolved simulations using a modified version of Merrifield's model.
+    
+    The model explicity includes the :math:`^1(TT)` state, and allows for decay
+    of a single triplet in a :math:`(T..T)` state.
+    
+    Attributes
+    ----------
+    states : list of str
+        The names of the excited state species.
+    rates : list of str
+        The names of the different rate constants in the model.
+    model_name : str
+        The name of the model.
+    initial_state : str
+        The name of the photoexcited state.
+    G : float
+        The exciton generation rate for :attr:`MerrifieldExplicit1TT.initial_state`. Units of per volume per time.
+    t : numpy.ndarray
+        1D array of time points for which to solve the rate equations.
+    kGEN : float
+        The rate at which :attr:`MerrifieldExplicit1TT.initial_state` is populated. Units of per time.
+    kSF : float
+        Rate constant for :math:`S_1\rightarrow ^1(TT)`. Units of per time.
+    k_SF : float
+        Rate constant for :math:`^1(TT)\rightarrow S_1`. Units of per time.
+    kHOP : float
+        Rate constant for :math:`^1(TT)\rightarrow (T..T)`. Units of per time.
+    k_HOP : float
+        Rate constant for :math:`(T..T)\rightarrow ^1(TT)`. Units of per time.
+    kHOP2 : float
+        Rate constant for :math:`(T..T)\rightarrow2\times T_1`. Units of per time.
+    kTTA : float
+        Rate constant for :math:`2\times T_1\rightarrow (T..T) or ^1(TT) or S_1`. See :attr:`MerrifieldExplicit1TT.TTA_channel`. Units of volume per time.
+    kRELAX : float
+        Rate constant for mixing between the :math:`(T..T)` states. Units of per time.
+    kSSA : float
+        Singlet-singlet annihilation rate constant. Units of volume per time.
+    kSNR : float
+        Rate constant for the decay of :math:`S_1`. Units of per time.
+    kTTNR : float
+        Rate constant for the decay of :math:`^1(TT)`. Units of per time.
+    kTNR : float
+        Rate constant for the decay of :math:`T_1`, or one of the triplets in :math:`(T..T)`. Units of per time.
+    cslsq : numpy.ndarray
+        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.
+    TTA_channel : int
+        Index determining the fate of free triplets. 1 gives :math:`2\times T_1\rightarrow (T..T)`. 2 gives :math:`2\times T_1\rightarrow ^1(TT)`. 3 gives :math:`2\times T_1\rightarrow S_1`.
+    simulation_results : dict
+        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).
+        
     """
-    This is basically Merrifields model, but explicitly separating 
-    the 1(TT) from S1 and (T..T).
-    """
+    
     def __init__(self):
         super().__init__()
         # metadata
         self.model_name = 'MerrifieldExplicit1TT'
-        self.number_of_states = 12
+        self._number_of_states = 12
         self.states = ['S1', 'TT', 'T_T_total', 'T1']
         self.rates = ['kGEN', 'kSF', 'k_SF', 'kHOP', 'k_HOP', 'kHOP2', 'KTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
         # rates between excited states
@@ -35,7 +84,7 @@ class MerrifieldExplicit1TT(TimeResolvedModel):
 
     def _rate_equations(self, y, t):
         GS, S1, TT, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9, T1 = y
-        dydt = np.zeros(self.number_of_states+1)
+        dydt = np.zeros(self._number_of_states+1)
         # GS
         dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
@@ -102,14 +151,55 @@ class MerrifieldExplicit1TT(TimeResolvedModel):
       
 
 class Merrifield(TimeResolvedModel):
+    r"""
+    A class for steady-state simulations using Merrifield's model.
+    
+    Attributes
+    ----------
+    states : list of str
+        The names of the excited state species.
+    rates : list of str
+        The names of the different rate constants in the model.
+    model_name : str
+        The name of the model.
+    initial_state : str
+        The name of the photoexcited state.
+    G : float
+        The exciton generation rate for :attr:`Merrifield.initial_state`. Units of per volume per time.
+    t : numpy.ndarray
+        1D array of time points for which to solve the rate equations.
+    kGEN : float
+        The rate at which :attr:`Merrifield.initial_state` is populated. Units of per time.
+    kSF : float
+        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.
+    k_SF : float
+        Rate constant for :math:`(TT)\rightarrow S_1`. Units of per time.
+    kDISS : float
+        Rate constant for :math:`(TT)\rightarrow2\times T_1`. Units of per time.
+    kTTA : float
+        Rate constant for :math:`2\times T_1\rightarrow (TT)`. Units of volume per time.
+    kRELAX : float
+        Rate constant for mixing between the :math:`(T..T)` states. Units of per time.
+    kSSA : float
+        Singlet-singlet annihilation rate constant. Units of volume per time.
+    kSNR : float
+        Rate constant for the decay of :math:`S_1`. Units of per time.
+    kTTNR : float
+        Rate constant for the decay of :math:`(TT)`. Units of per time.
+    kTNR : float
+        Rate constant for the decay of :math:`T_1`. Units of per time.
+    cslsq : numpy.ndarray
+        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.
+    simulation_results : dict
+        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).
+        
     """
-    The standard Merrifield model.
-    """
+    
     def __init__(self):
         super().__init__()
         # metadata
         self.model_name = 'Merrifield'
-        self.number_of_states = 11
+        self._number_of_states = 11
         self.states = ['S1', 'TT_bright', 'TT_total', 'T1']
         self.rates = ['kGEN', 'kSF', 'k_SF', 'kDISS', 'KTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
         # rates between excited states
@@ -129,7 +219,7 @@ class Merrifield(TimeResolvedModel):
 
     def _rate_equations(self, y, t):
         GS, S1, TT_1, TT_2, TT_3, TT_4, TT_5, TT_6, TT_7, TT_8, TT_9, T1 = y
-        dydt = np.zeros(self.number_of_states+1)
+        dydt = np.zeros(self._number_of_states+1)
         # GS
         dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
@@ -171,16 +261,60 @@ class Merrifield(TimeResolvedModel):
         
 
 class Bardeen(TimeResolvedModel):
+    r"""
+    A class for steady-state simulations using a modified version of Merrifield's model.
+    
+    The model does not include free triplets. Instead Merrifield's :math:`(TT)`
+    states can separate to form 9 :math:`(T..T)` states which can undergo spin
+    relaxation. This is an approximation to triplet-diffusion in the limit of
+    low excitation density.
+    
+    Attributes
+    ----------
+    states : list of str
+        The names of the excited state species.
+    rates : list of str
+        The names of the different rate constants in the model.
+    model_name : str
+        The name of the model.
+    initial_state : str
+        The name of the photoexcited state.
+    G : float
+        The exciton generation rate for :attr:`Bardeen.initial_state`. Units of per volume per time.
+    t : numpy.ndarray
+        1D array of time points for which to solve the rate equations.
+    kGEN : float
+        The rate at which :attr:`Bardeen.initial_state` is populated. Units of per time.
+    kSF : float
+        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.
+    k_SF : float
+        Rate constant for :math:`(TT)\rightarrow S_1`. Units of per time.
+    kHOP : float
+        Rate constant for :math:`(TT)\rightarrow (T..T)`. Units of per time.
+    k_HOP : float
+        Rate constant for :math:`(T..T)\rightarrow (TT)`. Units of per time.
+    kRELAX : float
+        Rate constant for mixing between the :math:`(T..T)` states. Units of per time.
+    kSSA : float
+        Singlet-singlet annihilation rate constant. Units of volume per time.
+    kSNR : float
+        Rate constant for the decay of :math:`S_1`. Units of per time.
+    kTTNR : float
+        Rate constant for the decay of :math:`(TT)`. Units of per time.
+    kSPIN : float
+        Rate constant for the decay of :math:`(T..T)`. Units of per time.
+    cslsq : numpy.ndarray
+        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.
+    simulation_results : dict
+        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).
+        
     """
-    Variation of Merrifield model presented by Bardeen and co-workers. It is
-    valid at low fluence (no TTA) and adds triplet diffusion in a crude
-    fashion.
-    """
+    
     def __init__(self):
         super().__init__()
         # metadata
         self.model_name = 'Bardeen'
-        self.number_of_states = 19
+        self._number_of_states = 19
         self.states = ['S1', 'TT_bright', 'TT_total', 'T_T_total']
         self.rates = ['kGEN', 'kSF', 'k_SF', 'kHOP', 'k_HOP', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kSPIN']
         self._allowed_initial_states = {'S1'}
@@ -201,7 +335,7 @@ class Bardeen(TimeResolvedModel):
 
     def _rate_equations(self, y, t):
         GS, S1, TT_1, TT_2, TT_3, TT_4, TT_5, TT_6, TT_7, TT_8, TT_9, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9 = y
-        dydt = np.zeros(self.number_of_states+1)
+        dydt = np.zeros(self._number_of_states+1)
         # GS
         dydt[0] = -self._kGEN*GS
         # S1
