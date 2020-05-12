@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>tripletpairs.kineticmodelling._base &#8212; tripletpairs  documentation</title>
@@ -22,6 +22,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
@@ -35,9 +38,57 @@
   <h1>Source code for tripletpairs.kineticmodelling._base</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">odeint</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 
-<span class="k">class</span> <span class="nc">TimeResolvedModel</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">RateModel</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for all rate models.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    states : list of str</span>
+<span class="sd">        The names of the excited state species.</span>
+<span class="sd">    rates : list of str</span>
+<span class="sd">        The names of the different rate constants in the model.</span>
+<span class="sd">    model_name : str</span>
+<span class="sd">        The name of the model.</span>
+<span class="sd">    G : float</span>
+<span class="sd">        The initial exciton density. Units of per volume.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;base&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_resolved</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">1e17</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        
+    <span class="k">def</span> <span class="nf">_check_initial_weighting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">starting_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">starting_state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid state </span><span class="si">{0}</span><span class="s1"> in initial_weighting&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">starting_state</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span><span class="p">[</span><span class="n">starting_state</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weightings must be positive&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+            
+    <span class="k">def</span> <span class="nf">_set_initial_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">)</span>
+        <span class="n">total_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_weighting</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">/</span><span class="n">total_weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span>
+        <span class="k">return</span>
+
+
+<span class="k">class</span> <span class="nc">TimeResolvedModel</span><span class="p">(</span><span class="n">RateModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for all time-resolved models.</span>
 <span class="sd">    </span>
@@ -49,54 +100,60 @@
 <span class="sd">        The names of the different rate constants in the model.</span>
 <span class="sd">    model_name : str</span>
 <span class="sd">        The name of the model.</span>
-<span class="sd">    initial_state : str</span>
-<span class="sd">        The name of the photoexcited state.</span>
 <span class="sd">    G : float</span>
 <span class="sd">        The initial exciton density. Units of per volume.</span>
-<span class="sd">    kGEN : float</span>
-<span class="sd">        The rate at which :attr:`initial_state` is populated. Units of per time.</span>
-<span class="sd">    t : numpy.ndarray</span>
-<span class="sd">        1D array of time points for which to solve the rate equations.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
+<span class="sd">    t_step : float</span>
+<span class="sd">        The first time step taken by the simulation, thereafter the step will increase geometrically.</span>
+<span class="sd">    t_end : float</span>
+<span class="sd">        The last time point in the simulation.</span>
+<span class="sd">    num_points : int</span>
+<span class="sd">        The number of time points to compute the simulation at.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kGEN&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;base&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time_resolved</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">=</span> <span class="s1">&#39;S1&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">1e17</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kGEN</span> <span class="o">=</span> <span class="mf">1.8</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_step</span> <span class="o">=</span> <span class="mf">0.0052391092278624</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_end</span> <span class="o">=</span> <span class="mf">1e6</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span> <span class="o">=</span> <span class="mi">10000</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_time_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_end</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">t_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">)</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">t_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">view_timepoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produce a plot showing the distribution of times, print the first and last 5.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_time_axis</span><span class="p">()</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span> <span class="s1">&#39;bx&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="k">return</span>
     
     <span class="k">def</span> <span class="nf">_rate_equations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Will be modified for each rate model.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">_set_generation_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;initial_state attribute must be one of </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">==</span> <span class="s1">&#39;S1&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kGENS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kGEN</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kGENT</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">==</span> <span class="s1">&#39;T1&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kGENS</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kGENT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kGEN</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;initial_state attribute must be one of </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">))</span>
-        <span class="k">return</span>
-            
-    <span class="k">def</span> <span class="nf">_set_initial_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span>
-        <span class="k">return</span>
         
     <span class="k">def</span> <span class="nf">_initialise_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_time_axis</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_initial_weighting</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_initial_condition</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_generation_rates</span><span class="p">()</span>
         <span class="k">return</span>
     
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -114,58 +171,11 @@
         <span class="k">return</span>
         
     <span class="k">def</span> <span class="nf">_unpack_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Will be modified for each rate model.&quot;&quot;&quot;</span>
         <span class="k">pass</span>
-    
-    <span class="k">def</span> <span class="nf">get_population_between</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Integrates the dynamics of array between times t1 and t2.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        array : numpy.ndarray</span>
-<span class="sd">            1D array containing a simulated excited-state population.</span>
-<span class="sd">        t1 : float</span>
-<span class="sd">            Integrate **array** from this time to...</span>
-<span class="sd">        t2 : float</span>
-<span class="sd">            This time.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        population : float</span>
-<span class="sd">            The integrated population.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">t1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t2</span><span class="p">))</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-        <span class="n">population</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">population</span>
-    
-    <span class="k">def</span> <span class="nf">normalise_population_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Normalise array to time t.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        array : numpy.ndarray</span>
-<span class="sd">            1D array containing a simulated excited-state population.</span>
-<span class="sd">        t : float</span>
-<span class="sd">            Time at which to normalise array.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        array : numpy.ndarray</span>
-<span class="sd">            The normalised population.</span>
-<span class="sd">        factor : float</span>
-<span class="sd">            How much the original array was divided by.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">==</span> <span class="nb">min</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">/</span><span class="n">factor</span>
-        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="n">factor</span>
 
     
-<span class="k">class</span> <span class="nc">SteadyStateModel</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">SteadyStateModel</span><span class="p">(</span><span class="n">RateModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for all steady-state models.</span>
 <span class="sd">    </span>
@@ -177,50 +187,18 @@
 <span class="sd">        The names of the different rate constants in the model.</span>
 <span class="sd">    model_name : str</span>
 <span class="sd">        The name of the model.</span>
-<span class="sd">    initial_state : str</span>
-<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
 <span class="sd">    G : float</span>
 <span class="sd">        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;base&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_resolved</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">,</span> <span class="s1">&#39;injection&#39;</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">=</span> <span class="s1">&#39;S1&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">2.7e13</span>
         <span class="k">return</span>
-    
-    <span class="k">def</span> <span class="nf">_set_generation_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;initial_state attribute must be one of </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">==</span> <span class="s1">&#39;S1&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">==</span> <span class="s1">&#39;T1&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">==</span> <span class="s1">&#39;injection&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">/</span><span class="mi">4</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">/</span><span class="mi">4</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;initial_state attribute must be one of </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span><span class="p">))</span>
-        <span class="k">return</span>
-    
-    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Perform the simulation.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
     
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_quadratic_formula</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
@@ -262,13 +240,16 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, David Bossanyi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
   </body>
 </html>
