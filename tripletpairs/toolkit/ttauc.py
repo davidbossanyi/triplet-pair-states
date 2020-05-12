@@ -65,7 +65,7 @@ def parameter_variation(m, sh, thing_to_vary, thing_to_divide_by, factors, num_p
     else:
         vars_object = m
         
-    vline = vars(vars_object)[thing_to_vary]
+    orig = vars(vars_object)[thing_to_vary]
     
     rates = np.geomspace(vars(vars_object)[thing_to_vary]/factors[0], vars(vars_object)[thing_to_vary]*factors[1], num_points)
     for i, rate in enumerate(rates):
@@ -102,6 +102,7 @@ def parameter_variation(m, sh, thing_to_vary, thing_to_divide_by, factors, num_p
         
         if thing_to_divide_by is None:
             x = rates
+            vline = orig
             xlabel_text = rate_labels[thing_to_vary]
             if thing_to_vary == 'kTTA':
                 xlabel_unit = r' (nm$^3$ns$^{-1}$)' 
@@ -113,7 +114,7 @@ def parameter_variation(m, sh, thing_to_vary, thing_to_divide_by, factors, num_p
                 xlabel_unit = r' (ns$^{-1}$)'
         else:
             x = rates/vars(vars_object)[thing_to_divide_by]
-            vline /= vars(vars_object)[thing_to_divide_by]
+            vline = orig/vars(vars_object)[thing_to_divide_by]
             xlabel_text = rate_labels[thing_to_vary]+'/'+rate_labels[thing_to_divide_by]
             if thing_to_vary == 'kTTA':
                 xlabel_unit = r' (nm$^3$)'
@@ -148,5 +149,7 @@ def parameter_variation(m, sh, thing_to_vary, thing_to_divide_by, factors, num_p
             ax.tick_params(axis='both', which='minor', labelsize=20, width=1.4, length=3)
             for axis in ['top','bottom','left','right']:
               ax.spines[axis].set_linewidth(1.4)
+        
+        vars(vars_object)[thing_to_vary] = orig
               
     return rates, ucy_actual, ucy_nospin
