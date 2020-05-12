@@ -17,10 +17,10 @@ class MerrifieldExplicit1TT(SteadyStateModel):
         The names of the different rate constants in the model.
     model_name : str
         The name of the model.
-    initial_state : str
-        The name of the photoexcited state.
+    initial_weighting : dict
+        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).
     G : float
-        The exciton generation rate for :attr:`MerrifieldExplicit1TT.initial_state`. Units of per volume per time.
+        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.
     kSF : float
         Rate constant for :math:`S_1\rightarrow ^1(TT)`. Units of per time.
     k_SF : float
@@ -52,7 +52,9 @@ class MerrifieldExplicit1TT(SteadyStateModel):
         self.model_name = 'MerrifieldExplicit1TT'
         self._number_of_states = 12
         self.states = ['S1', 'TT', 'T_T_total', 'T1']
-        self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'kHOP2', 'KTTA', 'kSNR', 'kTTNR', 'kTNR']
+        self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'kHOP2', 'kTTA', 'kSNR', 'kTTNR', 'kTNR']
+        self._allowed_initial_states = {'S1', 'TT', 'T1'}
+        self._initial_state_mapping = {'S1': 0, 'TT': 1, 'T1': -1}
         # rates between excited states
         self.kSF = 20.0
         self.k_SF = 0.03
@@ -82,6 +84,14 @@ class MerrifieldExplicit1TT(SteadyStateModel):
         self._calculate_other_states()
         self._wrap_simulation_results()
         return
+    
+    def _set_generation_rates(self):
+        self._check_initial_weighting()
+        self._set_initial_condition()
+        self._GS = self._y0[self._initial_state_mapping['S1']]
+        self._GTT = self._y0[self._initial_state_mapping['TT']]
+        self._GT = self._y0[self._initial_state_mapping['T1']]
+        return
         
     def _calculate_intermediate_parameters(self):
         self._bT = self.kTNR
@@ -89,7 +99,7 @@ class MerrifieldExplicit1TT(SteadyStateModel):
         self._aT = (self.kTTA/9)*np.sum((self.kTNR+2*self.k_HOP*self.cslsq)/(self.k_HOP*self.cslsq+self.kHOP2+self.kTNR))
         self._GTp = self._GT
         self._bS = ((self.k_SF*self.kSNR)/(self.kSF+self.kSNR))+self.kTTNR+self.kHOP*np.sum(((self.kTNR+self.kHOP2)*self.cslsq)/(self.k_HOP*self.cslsq+self.kHOP2+self.kTNR))
-        self._GSp = (self.kSF*self._GS)/(self.kSF+self.kSNR)
+        self._GSp = ((self.kSF*self._GS)/(self.kSF+self.kSNR)) + self._GTT
         self._aS = (self.kTTA/9)*np.sum((self.k_HOP*self.cslsq)/(self.k_HOP*self.cslsq+self.kHOP2+self.kTNR))
         return
     
@@ -128,10 +138,10 @@ class Merrifield(SteadyStateModel):
         The names of the different rate constants in the model.
     model_name : str
         The name of the model.
-    initial_state : str
-        The name of the photoexcited state.
+    initial_weighting : dict
+        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).
     G : float
-        The exciton generation rate for :attr:`Merrifield.initial_state`. Units of per volume per time.
+        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.
     kSF : float
         Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.
     k_SF : float
@@ -159,7 +169,7 @@ class Merrifield(SteadyStateModel):
         self.model_name = 'Merrifield'
         self._number_of_states = 11
         self.states = ['S1', 'TT_bright', 'TT_total', 'T1']
-        self.rates = ['kSF', 'k_SF', 'kDISS', 'KTTA', 'kSNR', 'kTTNR', 'kTNR']
+        self.rates = ['kSF', 'k_SF', 'kDISS', 'kTTA', 'kSNR', 'kTTNR', 'kTNR']
         # rates between excited states
         self.kSF = 20.0
         self.k_SF = 0.03
@@ -186,6 +196,13 @@ class Merrifield(SteadyStateModel):
         self._calculate_T1()
         self._calculate_other_states()
         self._wrap_simulation_results()
+        return
+    
+    def _set_generation_rates(self):
+        self._check_initial_weighting()
+        self._set_initial_condition()
+        self._GS = self._y0[self._initial_state_mapping['S1']]
+        self._GT = self._y0[self._initial_state_mapping['T1']]
         return
         
     def _calculate_intermediate_parameters(self):
@@ -238,10 +255,10 @@ class Bardeen(SteadyStateModel):
         The names of the different rate constants in the model.
     model_name : str
         The name of the model.
-    initial_state : str
-        The name of the photoexcited state.
+    initial_weighting : dict
+        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).
     G : float
-        The exciton generation rate for :attr:`Bardeen.initial_state`. Units of per volume per time.
+        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.
     kSF : float
         Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.
     k_SF : float
@@ -273,6 +290,7 @@ class Bardeen(SteadyStateModel):
         self.states = ['S1', 'TT_bright', 'TT_total', 'T_T_total']
         self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'kRELAX', 'kSNR', 'kTTNR', 'kSPIN']
         self._allowed_initial_states = {'S1'}
+        self._initial_state_mapping = {'S1': 0}
         # rates between excited states
         self.kSF = 20.0
         self.k_SF = 0.03
@@ -302,6 +320,12 @@ class Bardeen(SteadyStateModel):
         y = np.linalg.solve(self._rem, self._grm)
         self._unpack_simulation(y)
         self._wrap_simulation_results()
+        return
+    
+    def _set_generation_rates(self):
+        self._check_initial_weighting()
+        self._set_initial_condition()
+        self._GS = self._y0[self._initial_state_mapping['S1']]
         return
     
     def _generate_rate_equation_matrix(self):

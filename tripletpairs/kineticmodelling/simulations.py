@@ -1,4 +1,5 @@
 from tripletpairs.spin import SpinHamiltonian
+from tripletpairs.toolkit import convolve_irf, integrate_between
 import numpy as np
 
 class KineticSimulation:
@@ -81,6 +82,36 @@ class KineticSimulation:
         self._phi_range = np.atleast_1d(phi)
         return
     
+    def convolve_populations_with_irf(self, fwhm, shift_to_zero=None):
+        """
+        Convolve simulation results with a gaussian IRF.
+
+        Parameters
+        ----------
+        fwhm : float
+            Full width half maximum of the IRF in same time units as t.
+        shift_max_to_zero : str, optional
+            If specified, the results will be shifted such that at t = 0, the specified state is maximal. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
+        new_state_populations = {}
+        t, y = convolve_irf(self.times, self.state_populations[list(self.state_populations.keys())[0]][:, 0], fwhm)
+        for state, population in self.state_populations.items():
+            new_state_populations[state] = np.zeros((len(t), len(self._B_range)))
+            for i in range(len(self._B_range)):
+                t, y = convolve_irf(self.times, population[:, i], fwhm)
+                new_state_populations[state][:, i] = y
+        if shift_to_zero is not None:
+            idx = np.argmax(self.state_populations[shift_to_zero][:, 0])
+            t -= t[idx]
+        self.times = t
+        self.state_populations = new_state_populations
+        return
+    
     def simulate_state_populations(self, states, return_eigenvalues=False):
         """
         Perform the simulation.
@@ -100,13 +131,14 @@ class KineticSimulation:
 
         """
         if return_eigenvalues:
-            self.eigenvalues = np.zeros(9, len(self._B_range))
+            self.eigenvalues = np.zeros((9, len(self._B_range)))
         else:
             self.eigenvalues = None
         
         if self.kinetic_model._time_resolved:
+            self.kinetic_model._calculate_time_axis()
             self.times = self.kinetic_model.t
-            self.state_populations = dict(zip(states, [np.zeros((len(self.kinetic_model.t), len(self._B_range))) for element in range(len(states))]))
+            self.state_populations = dict(zip(states, [np.zeros((len(self.times), len(self._B_range))) for element in range(len(states))]))
         else:
             self.state_populations = dict(zip(states, [np.zeros((1, len(self._B_range))) for element in range(len(states))]))
 
@@ -148,13 +180,12 @@ class KineticSimulation:
         elif self.state_populations[state].shape[0] > 1 and time_range is None:
             raise ValueError('time_range must be specified for time-resolved simulations')
         
-        if time_range is None:
-            state_population = self.state_populations[state]
-        else:
+        state_population = self.state_populations[state]
+        if time_range is not None:
             t1, t2 = time_range
-            mask = ((self.kinetic_model.t >= t1) & (self.kinetic_model.t <= t2))
-            state_population = self.state_populations[state][mask, :]
-            state_population = np.trapz(state_population, x=self.kinetic_model.t[mask], axis=0)/(t2-t1)
+            mask = ((self.times >= t1) & (self.times <= t2))
+            state_population = state_population[mask, :]
+            state_population = np.trapz(state_population, x=self.times[mask], axis=0)/(t2-t1)
         
         state_population = np.squeeze(state_population)
         

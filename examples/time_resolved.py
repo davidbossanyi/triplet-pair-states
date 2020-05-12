@@ -10,7 +10,6 @@ from matplotlib import pyplot as plt
 ###############################################################################
 
 m = timeresolvedmodels.Merrifield()
-m.kGEN = 1.8
 m.kSF = 0.05
 m.k_SF = 0.05
 m.kDISS = 5e-3
@@ -21,6 +20,7 @@ m.kTTNR = 1e-5
 m.kTNR = 1e-5
 m.kSNR = 0.06
 m.G = 1e17
+#m.t = np.logspace(-5, 5, 100)
 
 
 ###############################################################################
@@ -47,6 +47,7 @@ B = np.linspace(0, 0.25, 10)
 sim = KineticSimulation(m)
 sim.set_spin_hamiltonian_parameters(J, X, rAB, D, E, alpha, beta, gamma, B, theta, phi)
 sim.simulate_state_populations(['S1', 'TT_total', 'T1'])
+sim.convolve_populations_with_irf(2)
 mfe1 = sim.calculate_mfe('S1', time_range=(20, 30))
 mfe2 = sim.calculate_mfe('S1', time_range=(100, 200))
 
