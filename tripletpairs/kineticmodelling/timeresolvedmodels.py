@@ -135,8 +135,9 @@ class MerrifieldExplicit1TT(TimeResolvedModel):
             
     def _initialise_simulation(self):
         self._set_tta_rates()
+        self._calculate_time_axis()
+        self._check_initial_weighting()
         self._set_initial_condition()
-        self._set_generation_rates()
         return
 
     def _unpack_simulation(self, y):
