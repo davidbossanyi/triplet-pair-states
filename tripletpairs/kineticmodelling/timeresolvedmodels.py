@@ -64,7 +64,7 @@ class MerrifieldExplicit1TT(TimeResolvedModel):
         self.model_name = 'MerrifieldExplicit1TT'
         self._number_of_states = 12
         self.states = ['S1', 'TT', 'T_T_total', 'T1']
-        self.rates = ['kGEN', 'kSF', 'k_SF', 'kHOP', 'k_HOP', 'kHOP2', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'kHOP2', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
         self._allowed_initial_states = {'S1', 'TT', 'T1'}
         self._initial_state_mapping = {'S1': 0, 'TT': 1, 'T1': -1}
         # rates between excited states
@@ -206,7 +206,7 @@ class Merrifield(TimeResolvedModel):
         self.model_name = 'Merrifield'
         self._number_of_states = 11
         self.states = ['S1', 'TT_bright', 'TT_total', 'T1']
-        self.rates = ['kGEN', 'kSF', 'k_SF', 'kDISS', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        self.rates = ['kSF', 'k_SF', 'kDISS', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
         # rates between excited states
         self.kSF = 20.0
         self.k_SF = 0.03
@@ -321,7 +321,7 @@ class Bardeen(TimeResolvedModel):
         self.model_name = 'Bardeen'
         self._number_of_states = 19
         self.states = ['S1', 'TT_bright', 'TT_total', 'T_T_total']
-        self.rates = ['kGEN', 'kSF', 'k_SF', 'kHOP', 'k_HOP', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kSPIN']
+        self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kSPIN']
         self._allowed_initial_states = {'S1'}
         self._initial_state_mapping = {'S1': 0}
         # rates between excited states
