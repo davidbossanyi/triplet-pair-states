@@ -394,3 +394,105 @@ class Bardeen(TimeResolvedModel):
     def _wrap_simulation_results(self):
         self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total]))
         return
+###
+        
+class MerrifiledExplicitT_T(TimeResolvedModel): 
+    
+    def __init__(self):
+        super().__init__()
+        # metadata
+        self.model_name = 'MerrifieldExplicitT_T'
+        self._number_of_states = 13
+        self.states = ['S1', 'TT', 'T_T', 'T_T_total', 'T1']
+        self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'k_DPH', 'k_DPH', 'kHOP2', 'KTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        # rates between excited states
+        self.kSF = 1e4
+        self.k_SF = 5e3
+        self.kHOP = 60
+        self.k_HOP = 30
+        self.kDPH = 0.5
+        self.k_DPH = 0.6
+        self.kHOP2 = 1e-5
+        self.kTTA = 0
+        # spin relaxation
+        self.kRELAX = 0
+        # rates of decay
+        self.kSNR = 200
+        self.kSSA = 0
+        self.kTTNR = 0
+        self.kTNR = 4e-5
+        # TTA channel
+        self.TTA_channel = 1
+        # cslsq values
+        self.cslsq = (1/9)*np.ones(9)
+
+    def _rate_equations(self, y, t):
+        S1, TT, T_T, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9, T1 = y
+        dydt = np.zeros(self._number_of_states)
+        # GS
+        #dydt[0] = -(self._kGENS+self._kGENT)*GS
+        # S1
+        dydt[0] = - (self.kSNR+self.kSF)*S1 - self.kSSA*S1*S1 + self.k_SF*TT + self._kTTA_3*T1**2
+        # TT = 1(TT)
+        dydt[1] = self.kSF*S1 - (self.k_SF+self.kTTNR+self.kHOP)*TT + self.k_HOP*T_T + self._kTTA_2*T1**2
+        # T_T = 1(T..T)
+        dydt[2] = self.kHOP*TT - (self.k_HOP+self.kTTNR+self.kDPH*np.sum(self.cslsq))*T_T + self.k_DPH*(self.cslsq[0]*T_T_1+self.cslsq[1]*T_T_2+self.cslsq[2]*T_T_3+self.cslsq[3]*T_T_4+self.cslsq[4]*T_T_5+self.cslsq[5]*T_T_6+self.cslsq[6]*T_T_7+self.cslsq[7]*T_T_8+self.cslsq[8]*T_T_9)      
+        # T_T_1
+        dydt[3] = self.kDPH*self.cslsq[0]*T_T - (self.k_DPH*self.cslsq[0]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_1 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_2
+        dydt[4] = self.kDPH*self.cslsq[1]*T_T - (self.k_DPH*self.cslsq[1]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_2 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_3
+        dydt[5] = self.kDPH*self.cslsq[2]*T_T - (self.k_DPH*self.cslsq[2]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_3 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_4
+        dydt[6] = self.kDPH*self.cslsq[3]*T_T - (self.k_DPH*self.cslsq[3]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_4 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_5
+        dydt[7] = self.kDPH*self.cslsq[4]*T_T - (self.k_DPH*self.cslsq[4]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_5 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_6
+        dydt[8] = self.kDPH*self.cslsq[5]*T_T - (self.k_DPH*self.cslsq[5]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_6 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_7+T_T_8+T_T_9)
+        # T_T_7
+        dydt[9] = self.kDPH*self.cslsq[6]*T_T - (self.k_DPH*self.cslsq[6]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_7 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_8+T_T_9)
+        # T_T_8
+        dydt[10] = self.kDPH*self.cslsq[7]*T_T - (self.k_DPH*self.cslsq[7]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_8 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_9)
+        # T_T_9
+        dydt[11] = self.kDPH*self.cslsq[8]*T_T - (self.k_DPH*self.cslsq[8]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_9 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8)
+        # T1
+        dydt[12] = (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 - self.kTNR*T1
+        #
+        return dydt
+    
+    def _set_tta_rates(self):
+        if self.TTA_channel == 1:  # this is T1 + T1 -> (T..T)
+            self._kTTA_1 = self.kTTA
+            self._kTTA_2 = 0
+            self._kTTA_3 = 0
+        elif self.TTA_channel == 2:  # this is T1 + T1 -> (TT)
+            self._kTTA_1 = 0
+            self._kTTA_2 = self.kTTA
+            self._kTTA_3 = 0
+        elif self.TTA_channel == 3:  # this is T1 + T1 -> S1
+            self._kTTA_1 = 0
+            self._kTTA_2 = 0
+            self._kTTA_3 = self.kTTA
+        else:
+            raise ValueError('TTA channel must be either 1, 2 or 3')
+        return
+            
+    def _initialise_simulation(self):
+        self._set_tta_rates()
+        self._set_initial_condition()
+        self._set_generation_rates()
+        return
+
+    def _unpack_simulation(self, y):
+        self.S1 = y[:, 0]
+        self.TT = y[:, 1]
+        self.T_T = y[:, 2]
+        self.T_T_total = np.sum(y[:, 3:12], axis=1)
+        self.T1 = y[:, -1]
+        self._wrap_simulation_results()
+        return
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.T_T, self.T_T_total, self.T1]))
+        return
+      
