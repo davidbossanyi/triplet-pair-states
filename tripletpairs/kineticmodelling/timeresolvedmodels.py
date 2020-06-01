@@ -394,9 +394,9 @@ class Bardeen(TimeResolvedModel):
     def _wrap_simulation_results(self):
         self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total]))
         return
-###
+
         
-class MerrifiledExplicitT_T(TimeResolvedModel): 
+class MerrifieldExplicitT_T(TimeResolvedModel): 
     
     def __init__(self):
         super().__init__()
@@ -405,6 +405,8 @@ class MerrifiledExplicitT_T(TimeResolvedModel):
         self._number_of_states = 13
         self.states = ['S1', 'TT', 'T_T', 'T_T_total', 'T1']
         self.rates = ['kSF', 'k_SF', 'kHOP', 'k_HOP', 'k_DPH', 'k_DPH', 'kHOP2', 'KTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        self._allowed_initial_states = {'S1', 'TT', 'T1'}
+        self._initial_state_mapping = {'S1': 0, 'TT': 1, 'T1': -1}
         # rates between excited states
         self.kSF = 1e4
         self.k_SF = 5e3
@@ -429,8 +431,6 @@ class MerrifiledExplicitT_T(TimeResolvedModel):
     def _rate_equations(self, y, t):
         S1, TT, T_T, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9, T1 = y
         dydt = np.zeros(self._number_of_states)
-        # GS
-        #dydt[0] = -(self._kGENS+self._kGENT)*GS
         # S1
         dydt[0] = - (self.kSNR+self.kSF)*S1 - self.kSSA*S1*S1 + self.k_SF*TT + self._kTTA_3*T1**2
         # TT = 1(TT)
@@ -495,4 +495,3 @@ class MerrifiledExplicitT_T(TimeResolvedModel):
     def _wrap_simulation_results(self):
         self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.T_T, self.T_T_total, self.T1]))
         return
-      
