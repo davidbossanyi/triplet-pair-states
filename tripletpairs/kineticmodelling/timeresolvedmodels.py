@@ -565,7 +565,7 @@ class MerrifieldExplicitBranch(TimeResolvedModel):
         # T_T_9
         dydt[11] = self.kHOP*self.cslsq[8]*T_T - (self.k_HOP*self.cslsq[8]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_9 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8)
         # T1
-        dydt[12] = (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 -2*self._kTTA_4**2 - self.kTNR*T1
+        dydt[12] = (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 - 2*self._kTTA_4*T1**2 - self.kTNR*T1
         #
         return dydt
    
