@@ -394,7 +394,7 @@ class Bardeen(TimeResolvedModel):
     def _wrap_simulation_results(self):
         self.simulation_results = dict(zip(self.states, [self.S1, self.TT_bright, self.TT_total, self.T_T_total]))
         return
-###
+    
         
 class MerrifiledExplicitT_T(TimeResolvedModel): 
     
@@ -481,6 +481,123 @@ class MerrifiledExplicitT_T(TimeResolvedModel):
         self._set_tta_rates()
         self._set_initial_condition()
         self._set_generation_rates()
+        return
+
+    def _unpack_simulation(self, y):
+        self.S1 = y[:, 0]
+        self.TT = y[:, 1]
+        self.T_T = y[:, 2]
+        self.T_T_total = np.sum(y[:, 3:12], axis=1)
+        self.T1 = y[:, -1]
+        self._wrap_simulation_results()
+        return
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.T_T, self.T_T_total, self.T1]))
+        return
+      
+class MerrifieldExplicitBranch(TimeResolvedModel):
+    r"""
+    The model is used for AXT aggregate: for branching kinetic model.
+    After photoexcitation to the S2 state, wavepacket undergoes 50% into S1->GS and 50% into (TT) pair - SF process.
+    S2 -- TT --(T..T) -- T+T
+     |
+    S1
+    To combine with the same initial populated states in the Base class, the virtual states are renamed for the above real states for sake of simplicity.
+    """
+    
+    def __init__(self):
+        super().__init__()
+        # metadata
+        self.model_name = 'MerrifieldExplicitBranch'
+        self._number_of_states = 13
+        self.states = ['S1', 'TT', 'T_T', 'T_T_total', 'T1']
+        self.rates = ['kSF', 'k_SF', 'kCI', 'kHOP', 'k_HOP', 'kHOP2', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        self._allowed_initial_states = {'S1', 'TT', 'T_T', 'T1'}
+        self._initial_state_mapping = {'S1': 0, 'TT':1, 'T_T': 2, 'T1': -1}
+        # rates between excited states
+        self.kSF = 1e4
+        self.k_SF = 0
+        self.kCI = 1e4
+        self.kHOP = 0.067
+        self.k_HOP = 2.5e-4
+        self.kHOP2 = 1e-5         
+        self.kTTA = 0
+        # spin relaxation
+        self.kRELAX = 0
+        # rates of decay
+        self.kSNR = 200
+        self.kSSA = 0
+        self.kTTNR = 0.067
+        self.kTNR = 1e-5
+        # TTA channel
+        self.TTA_channel = 1
+        # cslsq values
+        self.cslsq = (1/9)*np.ones(9)
+
+    def _rate_equations(self, y, t):
+        S1, TT, T_T, T_T_1, T_T_2, T_T_3, T_T_4, T_T_5, T_T_6, T_T_7, T_T_8, T_T_9, T1 = y
+        dydt = np.zeros(self._number_of_states)
+        # S1 - virtual S2 (combine S1 in Base class)
+        dydt[0] = -(self.kCI+self.kSF)*S1 + self.k_SF*T_T + self._kTTA_4*T1**2
+        # TT - virtual dark S1
+        dydt[1] = self.kCI*S1 - self.kSNR*TT + self._kTTA_3*T1**2
+        # T_T - virtural TT
+        dydt[2] = self.kSF*S1 - (self.k_SF+self.kTTNR+self.kHOP*np.sum(self.cslsq))*T_T + self.k_HOP*(self.cslsq[0]*T_T_1+self.cslsq[1]*T_T_2+self.cslsq[2]*T_T_3+self.cslsq[3]*T_T_4+self.cslsq[4]*T_T_5+self.cslsq[5]*T_T_6+self.cslsq[6]*T_T_7+self.cslsq[7]*T_T_8+self.cslsq[8]*T_T_9) + self._kTTA_2*T1**2
+        # T_T_1
+        dydt[3] = self.kHOP*self.cslsq[0]*T_T - (self.k_HOP*self.cslsq[0]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_1 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_2
+        dydt[4] = self.kHOP*self.cslsq[1]*T_T - (self.k_HOP*self.cslsq[1]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_2 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_3
+        dydt[5] = self.kHOP*self.cslsq[2]*T_T - (self.k_HOP*self.cslsq[2]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_3 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_4
+        dydt[6] = self.kHOP*self.cslsq[3]*T_T - (self.k_HOP*self.cslsq[3]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_4 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_5
+        dydt[7] = self.kHOP*self.cslsq[4]*T_T - (self.k_HOP*self.cslsq[4]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_5 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_6+T_T_7+T_T_8+T_T_9)
+        # T_T_6
+        dydt[8] = self.kHOP*self.cslsq[5]*T_T - (self.k_HOP*self.cslsq[5]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_6 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_7+T_T_8+T_T_9)
+        # T_T_7
+        dydt[9] = self.kHOP*self.cslsq[6]*T_T - (self.k_HOP*self.cslsq[6]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_7 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_8+T_T_9)
+        # T_T_8
+        dydt[10] = self.kHOP*self.cslsq[7]*T_T - (self.k_HOP*self.cslsq[7]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_8 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_9)
+        # T_T_9
+        dydt[11] = self.kHOP*self.cslsq[8]*T_T - (self.k_HOP*self.cslsq[8]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_9 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8)
+        # T1
+        dydt[12] = (self.kTNR+(2.0*self.kHOP2))*(T_T_1+T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9) - 2*self._kTTA_1*T1**2 - 2*self._kTTA_2*T1**2 - 2*self._kTTA_3*T1**2 - self.kTNR*T1
+        #
+        return dydt
+   
+    def _set_tta_rates(self):
+        if self.TTA_channel == 1:  # this is T1 + T1 -> (T..T)
+            self._kTTA_1 = self.kTTA
+            self._kTTA_2 = 0
+            self._kTTA_3 = 0
+            self._kTTA_4 = 0
+        elif self.TTA_channel == 2:  # this is T1 + T1 -> (TT)
+            self._kTTA_1 = 0
+            self._kTTA_2 = self.kTTA
+            self._kTTA_3 = 0
+            self._kTTA_4 = 0
+        elif self.TTA_channel == 3:  # this is T1 + T1 -> S1 (dark)
+            self._kTTA_1 = 0
+            self._kTTA_2 = 0
+            self._kTTA_3 = self.kTTA
+            self._TTA_4 = 0
+        elif self._kTTA_channel == 4: # this is T1 + T1 ->S2 (if energetic)
+            self._TTA_1 = 0
+            self._TTA_2 = 0
+            self._TTA_3 = 0
+            self._TTA_4 = self.kTTA
+        else:
+            raise ValueError('TTA channel must be either 1, 2, 3 or 4')
+        return
+ 
+           
+    def _initialise_simulation(self):
+        self._set_tta_rates()
+        self._calculate_time_axis()
+        self._check_initial_weighting()
+        self._set_initial_condition()
         return
 
     def _unpack_simulation(self, y):
