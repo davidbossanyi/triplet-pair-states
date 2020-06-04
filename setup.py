@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='tripletpairs',
 
-    version='0.2.3',
+    version='0.2.4',
 
     description='Package for simulations of triplet-pair states.',
 
