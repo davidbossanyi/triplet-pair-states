@@ -585,12 +585,12 @@ class MerrifieldExplicitBranch(TimeResolvedModel):
             self._kTTA_1 = 0
             self._kTTA_2 = 0
             self._kTTA_3 = self.kTTA
-            self._TTA_4 = 0
-        elif self._kTTA_channel == 4: # this is T1 + T1 ->S2 (if energetic)
-            self._TTA_1 = 0
-            self._TTA_2 = 0
-            self._TTA_3 = 0
-            self._TTA_4 = self.kTTA
+            self._kTTA_4 = 0
+        elif self.TTA_channel == 4: # this is T1 + T1 ->S2 (if energetic)
+            self._kTTA_1 = 0
+            self._kTTA_2 = 0
+            self._kTTA_3 = 0
+            self._kTTA_4 = self.kTTA
         else:
             raise ValueError('TTA channel must be either 1, 2, 3 or 4')
         return
