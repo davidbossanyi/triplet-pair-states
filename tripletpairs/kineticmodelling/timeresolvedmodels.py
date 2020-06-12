@@ -712,7 +712,7 @@ class ME1TT_TTAUC(TimeResolvedModel):
         # S1
         dydt[0] = -(self.kSNR+self.kSF)*S1 - self.kSSA*S1*S1 + self.k_SF*TT + self._kTTA_3*T1**2
         # TT
-        dydt[1] = self.kSF*S1 - (self.k_SF+self.kTTNR+self.kHOP*np.sum(self.cslsq))*TT + self.k_HOP*(self.cslsq[0]*T_T_1+self.cslsq[1]*T_T_2+self.cslsq[2]*T_T_3+self.cslsq[3]*T_T_4+self.cslsq[4]*T_T_5+self.cslsq[5]*T_T_6+self.cslsq[6]*T_T_7+self.cslsq[7]*T_T_8+self.cslsq[8]*T_T_9) + self._kTTA_2*T1a**2
+        dydt[1] = self.kSF*S1 - (self.k_SF+self.kTTNR+self.kHOP*np.sum(self.cslsq))*TT + self.k_HOP*(self.cslsq[0]*T_T_1+self.cslsq[1]*T_T_2+self.cslsq[2]*T_T_3+self.cslsq[3]*T_T_4+self.cslsq[4]*T_T_5+self.cslsq[5]*T_T_6+self.cslsq[6]*T_T_7+self.cslsq[7]*T_T_8+self.cslsq[8]*T_T_9) + self._kTTA_2*T1**2
         # T_T_1
         dydt[2] = self.kHOP*self.cslsq[0]*TT - (self.k_HOP*self.cslsq[0]+self.kTNR+self.kHOP2+self.kRELAX)*T_T_1 + (1/9)*self._kTTA_1*T1**2 + (1/8)*self.kRELAX*(T_T_2+T_T_3+T_T_4+T_T_5+T_T_6+T_T_7+T_T_8+T_T_9)
         # T_T_2
