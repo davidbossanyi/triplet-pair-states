@@ -514,7 +514,121 @@ class MerrifieldExplicitBranch(TimeResolvedModel):
     def _wrap_simulation_results(self):
         self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.T_T, self.T_T_total, self.T1]))
         return
+      
 
+class MerrifieldBranch(TimeResolvedModel):
+    r"""
+    A class for steady-state simulations using Merrifield's model.
+    
+    Attributes
+    ----------
+    states : list of str
+        The names of the excited state species.
+    rates : list of str
+        The names of the different rate constants in the model.
+    model_name : str
+        The name of the model.
+    G : float
+        The initial exciton density. Units of per volume.
+    initial_weighting : dict
+        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float). The default is {'S1': 1}.
+    t_step : float
+        The first time step taken by the simulation, thereafter the step will increase geometrically.
+    t_end : float
+        The last time point in the simulation.
+    num_points : int
+        The number of time points to compute the simulation at.
+    kSF : float
+        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.
+    k_SF : float
+        Rate constant for :math:`(TT)\rightarrow S_1`. Units of per time.
+    kDISS : float
+        Rate constant for :math:`(TT)\rightarrow2\times T_1`. Units of per time.
+    kTTA : float
+        Rate constant for :math:`2\times T_1\rightarrow (TT)`. Units of volume per time.
+    kRELAX : float
+        Rate constant for mixing between the :math:`(T..T)` states. Units of per time.
+    kSSA : float
+        Singlet-singlet annihilation rate constant. Units of volume per time.
+    kSNR : float
+        Rate constant for the decay of :math:`S_1`. Units of per time.
+    kTTNR : float
+        Rate constant for the decay of :math:`(TT)`. Units of per time.
+    kTNR : float
+        Rate constant for the decay of :math:`T_1`. Units of per time.
+    cslsq : numpy.ndarray
+        1D array containing the overlap factors between the 9 :math:`(T..T)` states and the singlet.
+    simulation_results : dict
+        Produced by :meth:`simulate`. Keys are the excited-state names (str), values the simulated populations (numpy.ndarray).
+        
+    """
+    
+    def __init__(self):
+        super().__init__()
+        # metadata
+        self.model_name = 'MerrifieldBranch'
+        self._number_of_states = 12
+        self.states = ['S1', 'TT', 'TT_bright', 'TT_total', 'T1']
+        self.rates = ['kSF', 'k_SF', 'kIC', 'kDISS', 'kTTA', 'kRELAX', 'kSNR', 'kSSA', 'kTTNR', 'kTNR']
+        # rates between excited states
+        self.kSF = 1e4
+        self.k_SF = 0
+        self.kIC = 1e4
+        self.kDISS = 0.067
+        self.kTTA = 1e-18
+        # spin relaxation (Bardeen addition - not in original Merrifield)
+        self.kRELAX = 0
+        # rates of decay
+        self.kSNR = 0.1
+        self.kSSA = 0
+        self.kTTNR = 0.067
+        self.kTNR = 1e-5
+        # cslsq values
+        self.cslsq = (1/9)*np.ones(9)
+
+    def _rate_equations(self, y, t):
+        S1, TT, TT_1, TT_2, TT_3, TT_4, TT_5, TT_6, TT_7, TT_8, TT_9, T1 = y
+        dydt = np.zeros(self._number_of_states)
+        # S1
+        dydt[0] = -(self.kIC+self.kSF*np.sum(self.cslsq))*S1 -self.kSSA*S1*S1+ self.k_SF*(self.cslsq[0]*TT_1+self.cslsq[1]*TT_2+self.cslsq[2]*TT_3+self.cslsq[3]*TT_4+self.cslsq[4]*TT_5+self.cslsq[5]*TT_6+self.cslsq[6]*TT_7+self.cslsq[7]*TT_8+self.cslsq[8]*TT_9)
+        # TT
+        dydt[1] = self.kIC*S1 - self.kSNR*TT
+        # TT_1
+        dydt[2] = self.kSF*self.cslsq[0]*S1 - (self.k_SF*self.cslsq[0]+self.kDISS+self.kTTNR+self.kRELAX)*TT_1 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9)
+        # TT_2
+        dydt[3] = self.kSF*self.cslsq[1]*S1 - (self.k_SF*self.cslsq[1]+self.kDISS+self.kTTNR+self.kRELAX)*TT_2 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9)
+        # TT_3
+        dydt[4] = self.kSF*self.cslsq[2]*S1 - (self.k_SF*self.cslsq[2]+self.kDISS+self.kTTNR+self.kRELAX)*TT_3 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9)
+        # TT_4
+        dydt[5] = self.kSF*self.cslsq[3]*S1 - (self.k_SF*self.cslsq[3]+self.kDISS+self.kTTNR+self.kRELAX)*TT_4 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_5+TT_6+TT_7+TT_8+TT_9)
+        # TT_5
+        dydt[6] = self.kSF*self.cslsq[4]*S1 - (self.k_SF*self.cslsq[4]+self.kDISS+self.kTTNR+self.kRELAX)*TT_5 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_6+TT_7+TT_8+TT_9)
+        # TT_6
+        dydt[7] = self.kSF*self.cslsq[5]*S1 - (self.k_SF*self.cslsq[5]+self.kDISS+self.kTTNR+self.kRELAX)*TT_6 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_7+TT_8+TT_9)
+        # TT_7
+        dydt[8] = self.kSF*self.cslsq[6]*S1 - (self.k_SF*self.cslsq[6]+self.kDISS+self.kTTNR+self.kRELAX)*TT_7 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_8+TT_9)
+        # TT_8
+        dydt[9] = self.kSF*self.cslsq[7]*S1 - (self.k_SF*self.cslsq[7]+self.kDISS+self.kTTNR+self.kRELAX)*TT_8 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_9)
+        # TT_9
+        dydt[10] = self.kSF*self.cslsq[8]*S1 - (self.k_SF*self.cslsq[8]+self.kDISS+self.kTTNR+self.kRELAX)*TT_9 + (1/9)*self.kTTA*T1*T1 + (1/8)*self.kRELAX*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8)
+        # T1
+        dydt[11] = 2.0*self.kDISS*(TT_1+TT_2+TT_3+TT_4+TT_5+TT_6+TT_7+TT_8+TT_9) - 2.0*self.kTTA*T1*T1 - self.kTNR*T1
+        #
+        return dydt
+
+    def _unpack_simulation(self, y):
+        self.S1 = y[:, 0]
+        self.TT = y[:, 1]
+        self.TT_bright = self.cslsq[0]*y[:, 2] + self.cslsq[1]*y[:, 3] + self.cslsq[2]*y[:, 4] + self.cslsq[3]*y[:, 5] + self.cslsq[4]*y[:, 6] + self.cslsq[5]*y[:, 7] + self.cslsq[6]*y[:, 8] + self.cslsq[7]*y[:, 9] + self.cslsq[8]*y[:, 10]
+        self.TT_total = np.sum(y[:, 2:11], axis=1)
+        self.T1 = y[:, -1]
+        self._wrap_simulation_results()
+        return
+    
+    def _wrap_simulation_results(self):
+        self.simulation_results = dict(zip(self.states, [self.S1, self.TT, self.TT_bright, self.TT_total, self.T1]))
+        return
+        
 
 class ME1TT_TTAUC(TimeResolvedModel):
     r"""
