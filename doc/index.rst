@@ -9,7 +9,9 @@ tripletpairs documentation
    _pages/spin
    _pages/orientations
    _pages/models
+   _pages/irf
    _pages/simulations
+   _pages/ttauc
    
 About
 =====

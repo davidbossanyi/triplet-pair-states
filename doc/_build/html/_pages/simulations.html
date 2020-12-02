@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Simulations &#8212; tripletpairs  documentation</title>
@@ -15,7 +15,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Models" href="models.html" /> 
+    <link rel="next" title="Triplet-Triplet Annihilation Upconversion" href="ttauc.html" />
+    <link rel="prev" title="Instrument Response" href="irf.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -24,7 +25,13 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="models.html" title="Models"
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ttauc.html" title="Triplet-Triplet Annihilation Upconversion"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="irf.html" title="Instrument Response"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
       </ul>
@@ -84,9 +91,9 @@
 </div>
 <div class="section" id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation">
-<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.</code><code class="sig-name descname">KineticSimulation</code><span class="sig-paren">(</span><em class="sig-param">kinetic_model</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tripletpairs.kineticmodelling.</code><code class="sig-name descname">KineticSimulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kinetic_model</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>A wrapper class for performing general rate-model-based simulations.</p>
 <p>Averaging over certain spin Hamiltonian parameters is taken care of. This
 allows the user to simulate the effect of randomly oriented molecules
@@ -97,7 +104,7 @@ allows the user to simulate the effect of randomly oriented molecules
 <dd class="field-odd"><p><strong>kinetic_model</strong> (<em>model instance</em>) – An instance of one of the kinetic models, either steady-state or time-resolved.</p>
 </dd>
 </dl>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.spin_hamiltonian">
 <code class="sig-name descname">spin_hamiltonian</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.spin_hamiltonian" title="Permalink to this definition">¶</a></dt>
 <dd><p>An instance of the <a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a> class.</p>
@@ -108,7 +115,7 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.kinetic_model">
 <code class="sig-name descname">kinetic_model</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.kinetic_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>An instance of one of the kinetic models, either steady-state or time-resolved.</p>
@@ -119,7 +126,7 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.state_populations">
 <code class="sig-name descname">state_populations</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.state_populations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Created by <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_state_populations()</span></code></a>. Keys are excited-state names, values are numpy arrays. Rows are times and columns are magnetic field strengths.</p>
@@ -130,7 +137,7 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.eigenvalues">
 <code class="sig-name descname">eigenvalues</code><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.eigenvalues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Eigenvalues of the triplet-pair states, optionally created by <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_state_populations()</span></code></a>. Rows are the 9 states, columns are magnetic field strengths.</p>
@@ -141,9 +148,9 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.calculate_mfe">
-<code class="sig-name descname">calculate_mfe</code><span class="sig-paren">(</span><em class="sig-param">state='S1'</em>, <em class="sig-param">time_range=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.calculate_mfe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.calculate_mfe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_mfe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span><span class="o">=</span><span class="default_value">'S1'</span></em>, <em class="sig-param"><span class="n">time_range</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.calculate_mfe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.calculate_mfe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the magnetic field effect for a given excited-state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -164,9 +171,29 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="tripletpairs.kineticmodelling.KineticSimulation.convolve_populations_with_irf">
+<code class="sig-name descname">convolve_populations_with_irf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fwhm</span></em>, <em class="sig-param"><span class="n">shift_to_zero</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.convolve_populations_with_irf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.convolve_populations_with_irf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve simulation results with a gaussian IRF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fwhm</strong> (<em>float</em>) – Full width half maximum of the IRF in same time units as t.</p></li>
+<li><p><strong>shift_max_to_zero</strong> (<em>str</em><em>, </em><em>optional</em>) – If specified, the results will be shifted such that at t = 0, the specified state is maximal. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.set_spin_hamiltonian_parameters">
-<code class="sig-name descname">set_spin_hamiltonian_parameters</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">X</em>, <em class="sig-param">rAB</em>, <em class="sig-param">D</em>, <em class="sig-param">E</em>, <em class="sig-param">alpha</em>, <em class="sig-param">beta</em>, <em class="sig-param">gamma</em>, <em class="sig-param">B</em>, <em class="sig-param">theta</em>, <em class="sig-param">phi</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.set_spin_hamiltonian_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.set_spin_hamiltonian_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_spin_hamiltonian_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">rAB</span></em>, <em class="sig-param"><span class="n">D</span></em>, <em class="sig-param"><span class="n">E</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em>, <em class="sig-param"><span class="n">B</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.set_spin_hamiltonian_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.set_spin_hamiltonian_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Input the parameters for the quantum-mechanical part of the simulation.</p>
 <p>Refer to <a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a> for details.</p>
 <dl class="field-list simple">
@@ -194,9 +221,9 @@ allows the user to simulate the effect of randomly oriented molecules
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations">
-<code class="sig-name descname">simulate_state_populations</code><span class="sig-paren">(</span><em class="sig-param">states</em>, <em class="sig-param">return_eigenvalues=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.simulate_state_populations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">simulate_state_populations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">states</span></em>, <em class="sig-param"><span class="n">return_eigenvalues</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/kineticmodelling/simulations.html#KineticSimulation.simulate_state_populations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.kineticmodelling.KineticSimulation.simulate_state_populations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the simulation.</p>
 <p>The results are stored in <a class="reference internal" href="#tripletpairs.kineticmodelling.KineticSimulation.state_populations" title="tripletpairs.kineticmodelling.KineticSimulation.state_populations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">KineticSimulation.state_populations</span></code></a>.</p>
 <dl class="field-list simple">
@@ -237,8 +264,11 @@ allows the user to simulate the effect of randomly oriented molecules
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="models.html"
-                        title="previous chapter">Models</a></p>
+  <p class="topless"><a href="irf.html"
+                        title="previous chapter">Instrument Response</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ttauc.html"
+                        title="next chapter">Triplet-Triplet Annihilation Upconversion</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -267,14 +297,20 @@ allows the user to simulate the effect of randomly oriented molecules
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="models.html" title="Models"
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ttauc.html" title="Triplet-Triplet Annihilation Upconversion"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="irf.html" title="Instrument Response"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, David Bossanyi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
   </body>
 </html>

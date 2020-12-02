@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>tripletpairs.kineticmodelling.steadystatemodels &#8212; tripletpairs  documentation</title>
@@ -22,6 +22,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
@@ -52,10 +55,10 @@
 <span class="sd">        The names of the different rate constants in the model.</span>
 <span class="sd">    model_name : str</span>
 <span class="sd">        The name of the model.</span>
-<span class="sd">    initial_state : str</span>
-<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
 <span class="sd">    G : float</span>
-<span class="sd">        The exciton generation rate for :attr:`MerrifieldExplicit1TT.initial_state`. Units of per volume per time.</span>
+<span class="sd">        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.</span>
 <span class="sd">    kSF : float</span>
 <span class="sd">        Rate constant for :math:`S_1\rightarrow ^1(TT)`. Units of per time.</span>
 <span class="sd">    k_SF : float</span>
@@ -87,7 +90,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;MerrifieldExplicit1TT&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">12</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT&#39;</span><span class="p">,</span> <span class="s1">&#39;T_T_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP&#39;</span><span class="p">,</span> <span class="s1">&#39;k_HOP&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP2&#39;</span><span class="p">,</span> <span class="s1">&#39;KTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP&#39;</span><span class="p">,</span> <span class="s1">&#39;k_HOP&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP2&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;TT&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
         <span class="c1"># rates between excited states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
@@ -117,6 +122,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_other_states</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
         <span class="k">return</span></div>
+    
+    <span class="k">def</span> <span class="nf">_set_generation_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_initial_weighting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_initial_condition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GTT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;TT&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;T1&#39;</span><span class="p">]]</span>
+        <span class="k">return</span>
         
     <span class="k">def</span> <span class="nf">_calculate_intermediate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span>
@@ -124,7 +137,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_aT</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_GTp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bS</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">))</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GS</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GSp</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_GS</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kSF</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kSNR</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GTT</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_aS</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kTTA</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_HOP</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cslsq</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kHOP2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span><span class="p">))</span>
         <span class="k">return</span>
     
@@ -163,10 +176,10 @@
 <span class="sd">        The names of the different rate constants in the model.</span>
 <span class="sd">    model_name : str</span>
 <span class="sd">        The name of the model.</span>
-<span class="sd">    initial_state : str</span>
-<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
 <span class="sd">    G : float</span>
-<span class="sd">        The exciton generation rate for :attr:`Merrifield.initial_state`. Units of per volume per time.</span>
+<span class="sd">        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.</span>
 <span class="sd">    kSF : float</span>
 <span class="sd">        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.</span>
 <span class="sd">    k_SF : float</span>
@@ -194,7 +207,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;Merrifield&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span> <span class="o">=</span> <span class="mi">11</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_bright&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T1&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kDISS&#39;</span><span class="p">,</span> <span class="s1">&#39;KTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kDISS&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTA&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTNR&#39;</span><span class="p">]</span>
         <span class="c1"># rates between excited states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
@@ -222,6 +235,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_other_states</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
         <span class="k">return</span></div>
+    
+    <span class="k">def</span> <span class="nf">_set_generation_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_initial_weighting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_initial_condition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;T1&#39;</span><span class="p">]]</span>
+        <span class="k">return</span>
         
     <span class="k">def</span> <span class="nf">_calculate_intermediate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kTNR</span>
@@ -273,10 +293,10 @@
 <span class="sd">        The names of the different rate constants in the model.</span>
 <span class="sd">    model_name : str</span>
 <span class="sd">        The name of the model.</span>
-<span class="sd">    initial_state : str</span>
-<span class="sd">        The name of the photoexcited state.</span>
+<span class="sd">    initial_weighting : dict</span>
+<span class="sd">        Dictionary of (str, float) pairs. Key is the state name (str) and value is its initial weight (float).</span>
 <span class="sd">    G : float</span>
-<span class="sd">        The exciton generation rate for :attr:`Bardeen.initial_state`. Units of per volume per time.</span>
+<span class="sd">        The exciton generation rate for :attr:`initial_state`. Units of per volume per time.</span>
 <span class="sd">    kSF : float</span>
 <span class="sd">        Rate constant for :math:`S_1\rightarrow (TT)`. Units of per time.</span>
 <span class="sd">    k_SF : float</span>
@@ -308,6 +328,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_bright&#39;</span><span class="p">,</span> <span class="s1">&#39;TT_total&#39;</span><span class="p">,</span> <span class="s1">&#39;T_T_total&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kSF&#39;</span><span class="p">,</span> <span class="s1">&#39;k_SF&#39;</span><span class="p">,</span> <span class="s1">&#39;kHOP&#39;</span><span class="p">,</span> <span class="s1">&#39;k_HOP&#39;</span><span class="p">,</span> <span class="s1">&#39;kRELAX&#39;</span><span class="p">,</span> <span class="s1">&#39;kSNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kTTNR&#39;</span><span class="p">,</span> <span class="s1">&#39;kSPIN&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_initial_states</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S1&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
         <span class="c1"># rates between excited states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mf">20.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mf">0.03</span>
@@ -338,6 +359,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_simulation</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_simulation_results</span><span class="p">()</span>
         <span class="k">return</span></div>
+    
+    <span class="k">def</span> <span class="nf">_set_generation_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_initial_weighting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_initial_condition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_state_mapping</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">]]</span>
+        <span class="k">return</span>
     
     <span class="k">def</span> <span class="nf">_generate_rate_equation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_states</span><span class="p">))</span>
@@ -397,13 +424,16 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">tripletpairs  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, David Bossanyi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
   </body>
 </html>

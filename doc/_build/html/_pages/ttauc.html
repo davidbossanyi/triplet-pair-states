@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Triplet-Triplet Annihilation Upconversion &#8212; tripletpairs  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Simulations" href="simulations.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="triplet-triplet-annihilation-upconversion">
+<h1>Triplet-Triplet Annihilation Upconversion<a class="headerlink" href="#triplet-triplet-annihilation-upconversion" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This module can be used to explore the effects of different parameters on the upconversion yield of an acceptor molecule system.</p>
+<p>The upconversion yield for an acceptor molecule systems is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\Phi_{UC}^{(a)}=\frac{2k_{SNR}[S_1]}{G}\]</div>
+<p>Therefore the maximum possible value is 100%.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tripletpairs.toolkit</span> <span class="kn">import</span> <span class="n">ttauc</span>
+<span class="kn">from</span> <span class="nn">tripletpairs.kineticmodelling</span> <span class="kn">import</span> <span class="n">steadystatemodels</span>
+<span class="kn">from</span> <span class="nn">tripletpairs.spin</span> <span class="kn">import</span> <span class="n">SpinHamiltonian</span>
+<span class="c1"># choose which parameter to explore   and what (if anything) to normalise by</span>
+<span class="n">thing_to_vary</span> <span class="o">=</span> <span class="s1">&#39;kTNR&#39;</span>
+<span class="n">thing_to_divide_by</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1"># set the parameter sampling options</span>
+<span class="n">factors</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">num_points</span> <span class="o">=</span> <span class="mi">51</span>
+<span class="c1"># setup the spin Hamiltonian</span>
+<span class="n">sh</span> <span class="o">=</span> <span class="n">SpinHamiltonian</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mf">6.45e-6</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">J</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">D</span><span class="o">/</span><span class="mi">3</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">D</span><span class="o">/</span><span class="mi">1000</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">1.570796</span><span class="p">,</span> <span class="mf">1.060889</span><span class="p">,</span> <span class="mf">1.570796</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">rAB</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.063132</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.998005</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="c1"># set up the rate model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">steadystatemodels</span><span class="o">.</span><span class="n">MerrifieldExplicit1TT</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSF</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">m</span><span class="o">.</span><span class="n">k_SF</span> <span class="o">=</span> <span class="mi">180</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kHOP</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">m</span><span class="o">.</span><span class="n">k_HOP</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kHOP2</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTA</span> <span class="o">=</span> <span class="mf">5e-3</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTTNR</span> <span class="o">=</span> <span class="mf">0.0015</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kTNR</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">m</span><span class="o">.</span><span class="n">kSNR</span> <span class="o">=</span> <span class="mf">0.06</span>
+<span class="n">m</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="mf">2.7e-8</span>
+<span class="c1"># do the simulations</span>
+<span class="n">rates</span><span class="p">,</span> <span class="n">ucy_actual</span><span class="p">,</span> <span class="n">ucy_nospin</span> <span class="o">=</span> <span class="n">ttauc</span><span class="o">.</span><span class="n">parameter_variation</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">thing_to_vary</span><span class="p">,</span> <span class="n">thing_to_divide_by</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">num_points</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-tripletpairs.toolkit.ttauc">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-tripletpairs.toolkit.ttauc" title="Permalink to this headline">¶</a></h2>
+<p>Module for exploring the parameter space of TTA-UC acceptor systems.</p>
+<dl class="py function">
+<dt id="tripletpairs.toolkit.ttauc.parameter_variation">
+<code class="sig-prename descclassname">tripletpairs.toolkit.ttauc.</code><code class="sig-name descname">parameter_variation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">sh</span></em>, <em class="sig-param"><span class="n">thing_to_vary</span></em>, <em class="sig-param"><span class="n">thing_to_divide_by</span></em>, <em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">num_points</span></em>, <em class="sig-param"><span class="n">draw_plot</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tripletpairs/toolkit/ttauc.html#parameter_variation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tripletpairs.toolkit.ttauc.parameter_variation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explore the effect of varying different parameters on the upconversion yield of the acceptor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference internal" href="models.html#tripletpairs.kineticmodelling.steadystatemodels.Merrifield" title="tripletpairs.kineticmodelling.steadystatemodels.Merrifield"><em>tripletpairs.kineticmodelling.steadystatemodels.Merrifield</em></a><em> or </em><a class="reference internal" href="models.html#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT" title="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT"><em>tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT</em></a>) – A pre-prepared instance of either <a class="reference internal" href="models.html#tripletpairs.kineticmodelling.steadystatemodels.Merrifield" title="tripletpairs.kineticmodelling.steadystatemodels.Merrifield"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.kineticmodelling.steadystatemodels.Merrifield</span></code></a> or <a class="reference internal" href="models.html#tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT" title="tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.kineticmodelling.steadystatemodels.MerrifieldExplicit1TT</span></code></a>.</p></li>
+<li><p><strong>sh</strong> (<a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><em>tripletpairs.spin.SpinHamiltonian</em></a>) – A pre-prepared instance of <a class="reference internal" href="spin.html#tripletpairs.spin.SpinHamiltonian" title="tripletpairs.spin.SpinHamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">tripletpairs.spin.SpinHamiltonian</span></code></a>.</p></li>
+<li><p><strong>thing_to_vary</strong> (<em>str</em>) – The name of the rate constant to vary.</p></li>
+<li><p><strong>thing_to_divide_by</strong> (<em>str</em><em> or </em><em>None</em>) – The name of the rate constant to normalise to, if desired.</p></li>
+<li><p><strong>factors</strong> (<em>2-tuple of float</em>) – Rate constant will be varied geometrically between its starting value divided by the first entry in factors and its starting value multiplied by the second entry in factors.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em>) – Number of rate constant values to sample.</p></li>
+<li><p><strong>draw_plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to draw a plot of the result. The default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the model given is invalid.</p></li>
+<li><p><strong>ValueError</strong> – If either of the given parameters is invalid.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>rates</strong> (<em>numpy.ndarray</em>) – The rate constant values of thing_to_vary, note that these have not been divided by anything.</p></li>
+<li><p><strong>ucy_actual</strong> (<em>numpy.ndarray</em>) – The upconversion yield as a function of rates.</p></li>
+<li><p><strong>ucy_nospin</strong> (<em>numpy.ndarray</em>) – The upconversion yield as a function of rates, assuming no spin statistical effects.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Triplet-Triplet Annihilation Upconversion</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#module-tripletpairs.toolkit.ttauc">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="simulations.html"
+                        title="previous chapter">Simulations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_pages/ttauc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">tripletpairs  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, David Bossanyi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
