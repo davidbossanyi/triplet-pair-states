@@ -35,7 +35,8 @@ class SpinHamiltonian:
         1D array containing the overlap factors between the 9 eigenstates and the singlet. Complex numbers in general.
     cslsq : numpy.ndarray
         1D array containing the squared overlap factors between the 9 eigenstates and the singlet. These are what is used in kinetic models.
-    
+    sum_ctlsq : numpy.ndarray
+        1D array containing the total squared overlap factors between the 9 eigenstates and the 3 spin-1 triplet pair states.
     """
     
     def __init__(self):
@@ -64,6 +65,12 @@ class SpinHamiltonian:
     
     def _set_singlet_state(self):
         self._singlet_state = (1/np.sqrt(3))*np.array([1, 0, 0, 0, 1, 0, 0, 0, 1])
+        return
+    
+    def _set_triplet_states(self):
+        self._triplet_state_x = (1/np.sqrt(2))*np.array([0, 0, 0, 0, 0, 1, 0, -1, 0])
+        self._triplet_state_y = (1/np.sqrt(2))*np.array([0, 0, -1, 0, 0, 0, 1, 0, 0])
+        self._triplet_state_z = (1/np.sqrt(2))*np.array([0, 1, 0, -1, 0, 0, 0, 0, 0])
         return
         
            
@@ -268,7 +275,7 @@ class SpinHamiltonian:
         
     def calculate_cslsq(self):
         """
-        Calculate the overlaps.
+        Calculate the singlet overlaps.
 
         Returns
         -------
@@ -277,6 +284,24 @@ class SpinHamiltonian:
         """
         self.csl = np.matmul(self._singlet_state, self.eigenstates)
         self.cslsq = np.abs(self.csl)**2
+        return
+    
+    def calculate_total_ctlsq(self):
+        """
+        Calculate the total of the triplet overlaps.
+
+        Returns
+        -------
+        None.
+
+        """
+        self._ctl_x = np.matmul(self._triplet_state_x, self.eigenstates)
+        self._ctlsq_x = np.abs(self._ctl_x)**2
+        self._ctl_y = np.matmul(self._triplet_state_y, self.eigenstates)
+        self._ctlsq_y = np.abs(self._ctl_y)**2
+        self._ctl_z = np.matmul(self._triplet_state_z, self.eigenstates)
+        self._ctlsq_z = np.abs(self._ctl_z)**2
+        self.sum_ctlsq = self._ctlsq_x = self._ctlsq_y + self._ctlsq_z
         return
     
     def calculate_everything(self):
