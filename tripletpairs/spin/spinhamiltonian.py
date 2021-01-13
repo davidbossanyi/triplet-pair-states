@@ -43,6 +43,7 @@ class SpinHamiltonian:
         self._set_constants()
         self._initialise_parameters()
         self._set_singlet_state()
+        self._set_triplet_states()
         
     def _set_constants(self):
         self.mu_B = 5.788e-5  # Bohr magneton in eV/T
@@ -301,7 +302,7 @@ class SpinHamiltonian:
         self._ctlsq_y = np.abs(self._ctl_y)**2
         self._ctl_z = np.matmul(self._triplet_state_z, self.eigenstates)
         self._ctlsq_z = np.abs(self._ctl_z)**2
-        self.sum_ctlsq = self._ctlsq_x = self._ctlsq_y + self._ctlsq_z
+        self.sum_ctlsq = self._ctlsq_x + self._ctlsq_y + self._ctlsq_z
         return
     
     def calculate_everything(self):
