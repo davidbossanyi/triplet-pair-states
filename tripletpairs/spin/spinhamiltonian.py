@@ -34,9 +34,11 @@ class SpinHamiltonian:
     csl : numpy.ndarray
         1D array containing the overlap factors between the 9 eigenstates and the singlet. Complex numbers in general.
     cslsq : numpy.ndarray
-        1D array containing the squared overlap factors between the 9 eigenstates and the singlet. These are what is used in kinetic models.
+        1D array containing the squared overlap factors between the 9 eigenstates and the spin-0 triplet pair state.
     sum_ctlsq : numpy.ndarray
         1D array containing the total squared overlap factors between the 9 eigenstates and the 3 spin-1 triplet pair states.
+    sum_cqlsq : numpy.ndarray
+        1D array containing the total squared overlap factors between the 9 eigenstates and the 5 spin-2 triplet pair states.
     """
     
     def __init__(self):
@@ -44,6 +46,7 @@ class SpinHamiltonian:
         self._initialise_parameters()
         self._set_singlet_state()
         self._set_triplet_states()
+        self._set_quintet_states()
         
     def _set_constants(self):
         self.mu_B = 5.788e-5  # Bohr magneton in eV/T
@@ -72,6 +75,14 @@ class SpinHamiltonian:
         self._triplet_state_x = (1/np.sqrt(2))*np.array([0, 0, 0, 0, 0, 1, 0, -1, 0])
         self._triplet_state_y = (1/np.sqrt(2))*np.array([0, 0, -1, 0, 0, 0, 1, 0, 0])
         self._triplet_state_z = (1/np.sqrt(2))*np.array([0, 1, 0, -1, 0, 0, 0, 0, 0])
+        return
+    
+    def _set_quintet_states(self):
+        self._quintet_state_a = (1/np.sqrt(2))*np.array([1, 0, 0, 0, -1, 0, 0, 0, 0])
+        self._quintet_state_b = (1/np.sqrt(6))*np.array([1, 0, 0, 0, 1, 0, 0, 0, -2])
+        self._quintet_state_x = (1/np.sqrt(2))*np.array([0, 0, 0, 0, 0, 1, 0, 1, 0])
+        self._quintet_state_y = (1/np.sqrt(2))*np.array([0, 0, 1, 0, 0, 0, 1, 0, 0])
+        self._quintet_state_z = (1/np.sqrt(2))*np.array([0, 1, 0, 1, 0, 0, 0, 0, 0])
         return
         
            
@@ -305,6 +316,28 @@ class SpinHamiltonian:
         self.sum_ctlsq = self._ctlsq_x + self._ctlsq_y + self._ctlsq_z
         return
     
+    def calculate_total_cqlsq(self):
+        """
+        Calculate the total of the quintet overlaps.
+
+        Returns
+        -------
+        None.
+
+        """
+        self._cql_a = np.matmul(self._quintet_state_a, self.eigenstates)
+        self._cqlsq_a = np.abs(self._cql_a)**2
+        self._cql_b = np.matmul(self._quintet_state_b, self.eigenstates)
+        self._cqlsq_b = np.abs(self._cql_b)**2
+        self._cql_x = np.matmul(self._quintet_state_x, self.eigenstates)
+        self._cqlsq_x = np.abs(self._cql_x)**2
+        self._cql_y = np.matmul(self._quintet_state_y, self.eigenstates)
+        self._cqlsq_y = np.abs(self._cql_y)**2
+        self._cql_z = np.matmul(self._quintet_state_z, self.eigenstates)
+        self._cqlsq_z = np.abs(self._cql_z)**2
+        self.sum_cqlsq = self._cqlsq_a + self._cqlsq_b + self._cqlsq_x + self._cqlsq_y + self._cqlsq_z
+        return
+    
     def calculate_everything(self):
         """
         Calculate the Hamiltonian, eigenstates, eigenvalues and overlaps all at the same time.
@@ -323,4 +356,6 @@ class SpinHamiltonian:
         self.calculate_hamiltonian()
         self.calculate_eigenstates()
         self.calculate_cslsq()
+        self.calculate_total_ctlsq()
+        self.calculate_total_cqlsq()
         return
